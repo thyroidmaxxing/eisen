@@ -372,13 +372,13 @@ function dayColor(n){const i=S.plan.days.findIndex(d=>d.name===n);return i<0?C.m
 const inkOn=c=>(c===C.yel||c===C.chalk)?C.bg:C.chalk;
 function planEx(name){for(const d of S.plan.days)for(const e of d.ex)if(e.name===name)return e;return null}
 function lastPerf(name,day){let any=null;for(let i=S.sessions.length-1;i>=0;i--){const s=S.sessions[i];if(s.mode==='deload')continue;const e=s.ex.find(x=>x.name===name&&x.sets.length);if(!e)continue;if(s.day===day)return {s,e};if(!any)any={s,e}}return any}
-function suggest(spec,ps,inc){if(!ps||num(ps.w)==null)return null;const w=num(ps.w),r=num(ps.r),rir=num(ps.rir),rmin=parseFloat(spec.rir)||0;if(r!=null&&r>=spec.max&&(rir==null||rir>=rmin))return {w:rnd(w+inc),up:true};if(r!=null&&r<spec.min){const t=corrLoad(w,r,spec,inc);if(t&&t<w)return {w:t,low:true}}return {w,up:false,low:r!=null&&r<spec.min}}
-function sugFor(mode,spec,ps,inc){return mode==='deload'?(ps&&num(ps.w)!=null?{w:num(ps.w)}:null):suggest(spec,ps,inc)}
+function suggest(spec,ps,inc,prog){if(!ps||num(ps.w)==null)return null;const w=num(ps.w),r=num(ps.r),rir=num(ps.rir),rmin=parseFloat(spec.rir)||0;if(r!=null&&r>=spec.max&&(rir==null||rir>=rmin))return {w:rnd(w+inc),up:true};if(prog!=='reps'&&r!=null&&r<spec.min){const t=corrLoad(w,r,spec,inc);if(t&&t<w)return {w:t,low:true}}return {w,up:false,low:r!=null&&r<spec.min}}
+function sugFor(mode,spec,ps,inc,prog){return mode==='deload'?(ps&&num(ps.w)!=null?{w:num(ps.w)}:null):suggest(spec,ps,inc,prog)}
 function mkEx(e,day,mode){const specs=setsFor(e,mode),lp=lastPerf(e.name,day),inc=num(e.inc)??num(S.settings.inc)??2.5;
- return {name:e.name,muscle:e.muscle||'',setup:e.setup||'',rest:e.rest||90,inc,specs:specs.map(s=>({min:s.min,max:s.max,rir:rirShow(s.rir,mode),base:s.rir})),last:lp?{date:lp.s.date,sets:lp.e.sets}:null,
-  sets:specs.map((s,i)=>{const ps=lp?(lp.e.sets[i]||last(lp.e.sets)):null;const g=sugFor(mode,s,ps,inc);return {w:g?dv(g.w):'',r:'',rir:'',done:false,up:!!(g&&g.up),low:!!(g&&g.low)}})}}
-function swapEx(ei,name){const a=S.active,e=a.ex[ei],pe=planEx(name);e.name=name;e.setup=pe?pe.setup||'':'';if(pe&&pe.muscle)e.muscle=pe.muscle;const lp=lastPerf(name,a.day);e.last=lp?{date:lp.s.date,sets:lp.e.sets}:null;
- e.sets.forEach((s,i)=>{if(s.done)return;const sp=e.specs[i]||last(e.specs);const ps=lp?(lp.e.sets[i]||last(lp.e.sets)):null;const g=sugFor(a.mode,{min:sp.min,max:sp.max,rir:sp.base??sp.rir},ps,e.inc);s.w=g?dv(g.w):'';s.up=!!(g&&g.up);s.low=!!(g&&g.low)})}
+ return {name:e.name,muscle:e.muscle||'',setup:e.setup||'',rest:e.rest||90,inc,prog:e.prog||'',specs:specs.map(s=>({min:s.min,max:s.max,rir:rirShow(s.rir,mode),base:s.rir})),last:lp?{date:lp.s.date,sets:lp.e.sets}:null,
+  sets:specs.map((s,i)=>{const ps=lp?(lp.e.sets[i]||last(lp.e.sets)):null;const g=sugFor(mode,s,ps,inc,e.prog);return {w:g?dv(g.w):'',r:'',rir:'',done:false,up:!!(g&&g.up),low:!!(g&&g.low)}})}}
+function swapEx(ei,name){const a=S.active,e=a.ex[ei],pe=planEx(name);e.name=name;e.setup=pe?pe.setup||'':'';e.prog=pe?pe.prog||'':'';e.inc=pe&&num(pe.inc)!=null?num(pe.inc):e.inc;if(pe&&pe.muscle)e.muscle=pe.muscle;const lp=lastPerf(name,a.day);e.last=lp?{date:lp.s.date,sets:lp.e.sets}:null;
+ e.sets.forEach((s,i)=>{if(s.done)return;const sp=e.specs[i]||last(e.specs);const ps=lp?(lp.e.sets[i]||last(lp.e.sets)):null;const g=sugFor(a.mode,{min:sp.min,max:sp.max,rir:sp.base??sp.rir},ps,e.inc,e.prog);s.w=g?dv(g.w):'';s.up=!!(g&&g.up);s.low=!!(g&&g.low)})}
 function nextDay(){const rot=S.plan.rotation.filter(x=>x!=='Off'&&S.plan.days.some(d=>d.name===x));if(!rot.length)return S.plan.days[0]?S.plan.days[0].name:null;let ls=null;for(let i=S.sessions.length-1;i>=0;i--)if(rot.includes(S.sessions[i].day)){ls=S.sessions[i];break}if(!ls)return rot[0];return rot[(rot.indexOf(ls.day)+1)%rot.length]}
 function lastSessOf(n){for(let i=S.sessions.length-1;i>=0;i--)if(S.sessions[i].day===n)return S.sessions[i];return null}
 function newCycle(){const c=S.cycle;c.hist.push({n:c.n,start:c.start,end:todayStr()});c.n++;c.week=1;c.start=todayStr();save()}
@@ -458,7 +458,7 @@ function sessSheet(id){const s=S.sessions.find(x=>x.id===id);if(!s)return;
 /* ---------- Plan ---------- */
 function setSum(e){const g=[];e.sets.forEach(s=>{const k=`${s.min}-${s.max}`,l=last(g);if(l&&l.k===k&&l.rir===s.rir)l.n++;else g.push({k,rir:s.rir,n:1})});return g.map(x=>`${x.n}×${x.k}`).join(', ')+`, RIR ${[...new Set(g.map(x=>x.rir))].join(' / ')}, ${e.rest||90} s Pause`}
 function vPlan(){const c=S.cycle,mode=weekMode(c);
- let h=`<div class="card"><div class="cyc-top"><button class="cyc-n" data-a="cycnum" aria-label="Zyklusnummer ändern"><small>Zyklus</small><b>${c.n}</b></button><div class="cyc-w"><small>Woche</small><div class="wkc"><button class="ib" data-a="wk" data-d="-1" aria-label="Woche zurück">‹</button><b>${c.week}<i> / ${c.len}</i></b><button class="ib" data-a="wk" data-d="1" aria-label="Woche vor">›</button></div></div></div><p class="modebar ${mode}">${MODETXT[mode]}</p>
+ let h=puBanner()+`<div class="card"><div class="cyc-top"><button class="cyc-n" data-a="cycnum" aria-label="Zyklusnummer ändern"><small>Zyklus</small><b>${c.n}</b></button><div class="cyc-w"><small>Woche</small><div class="wkc"><button class="ib" data-a="wk" data-d="-1" aria-label="Woche zurück">‹</button><b>${c.week}<i> / ${c.len}</i></b><button class="ib" data-a="wk" data-d="1" aria-label="Woche vor">›</button></div></div></div><p class="modebar ${mode}">${MODETXT[mode]}</p>
  <div class="srow mt8"><span>Wochen pro Zyklus</span><input class="txt num-s" data-c="len" inputmode="numeric" value="${c.len}"></div>
  <div class="srow"><span>Woche 1 als Intro, RIR +1</span><button class="tog ${c.intro?'on':''}" data-a="ctog" data-k="intro" aria-label="Intro-Woche"></button></div>
  <div class="srow"><span>Letzte Woche ist Deload</span><button class="tog ${c.deload?'on':''}" data-a="ctog" data-k="deload" aria-label="Deload"></button></div>
@@ -471,7 +471,7 @@ function edHtml(){const e=ui.edit.e;return `<div class="sh-h"><h2>${ui.edit.ei==
  <label class="lbl">Name<input class="txt" data-ed="name" value="${esc(e.name)}"></label>
  <label class="lbl mt8">Zielmuskel<input class="txt" data-ed="muscle" value="${esc(e.muscle||'')}"></label>
  <label class="lbl mt8">Einstellung am Gerät<input class="txt" data-ed="setup" value="${esc(e.setup||'')}" placeholder="z. B. Sitz 4, Füße 5"></label>
- <div class="grid2 mt8"><label class="lbl">Pause in Sekunden<input class="txt" data-ed="rest" inputmode="numeric" value="${esc(e.rest??90)}"></label><label class="lbl">Steigerung in kg<input class="txt" data-ed="inc" inputmode="decimal" value="${esc(dv(e.inc))}" placeholder="${dv(S.settings.inc)}"></label></div>
+ <div class="grid2 mt8"><label class="lbl">Pause in Sekunden<input class="txt" data-ed="rest" inputmode="numeric" value="${esc(e.rest??90)}"></label><label class="lbl">Steigerung in kg<input class="txt" data-ed="inc" inputmode="decimal" value="${esc(dv(e.inc))}" placeholder="${dv(S.settings.inc)}"></label></div><label class="lbl mt8">Progression<select class="txt" data-ed="prog"><option value=""${e.prog==='reps'?'':' selected'}>Last zuerst (Standard)</option><option value="reps"${e.prog==='reps'?' selected':''}>Wiederholungen zuerst</option></select><small class="hint">Wiederholungen zuerst heißt: die Last bleibt stehen, bis das obere Ende des Bereichs erreicht ist. Für Nacken, Waden und Bauch, wo e1RM nichts aussagt.</small></label>
  <h3 class="mt16">Sätze</h3>${e.sets.map((s,i)=>`<div class="edset"><span>${i+1}</span><label class="si"><input data-eds="${i},min" inputmode="numeric" value="${esc(s.min)}"><small>Wdh min</small></label><label class="si"><input data-eds="${i},max" inputmode="numeric" value="${esc(s.max)}"><small>Wdh max</small></label><label class="si"><input data-eds="${i},rir" value="${esc(s.rir)}"><small>RIR</small></label><button class="ib sm" data-a="eddelset" data-i="${i}" aria-label="Satz entfernen">✕</button></div>`).join('')}
  <button class="ghost" data-a="edaddset">Satz hinzufügen</button><button class="primary" data-a="edsave">Übung speichern</button>${ui.edit.ei!=null?'<button class="ghost danger" data-a="eddel">Übung aus dem Plan löschen</button>':''}`}
 
@@ -613,7 +613,7 @@ async function finish(){const a=S.active;
 /* ---------- Plan-Editor ---------- */
 function openEditor(di,ei){const e=ei==null?{name:'',muscle:'',setup:'',rest:90,inc:null,sets:[{min:8,max:12,rir:'1'},{min:8,max:12,rir:'1'}]}:S.plan.days[di].ex[ei];ui.edit={di,ei,e:JSON.parse(JSON.stringify(e))};openSheet(edHtml())}
 async function edSave(){const e=ui.edit.e;e.name=String(e.name).trim();if(!e.name)return toast('Name fehlt');
- e.rest=parseInt(e.rest)||90;e.inc=num(e.inc);e.sets=e.sets.map(s=>{const mi=parseInt(s.min)||1;return {min:mi,max:Math.max(mi,parseInt(s.max)||mi),rir:String(s.rir||'0').trim()}});if(!e.sets.length)return toast('Mindestens ein Satz');
+ e.rest=parseInt(e.rest)||90;e.inc=num(e.inc);e.prog=e.prog==='reps'?'reps':'';e.sets=e.sets.map(s=>{const mi=parseInt(s.min)||1;return {min:mi,max:Math.max(mi,parseInt(s.max)||mi),rir:String(s.rir||'0').trim()}});if(!e.sets.length)return toast('Mindestens ein Satz');
  const day=S.plan.days[ui.edit.di];
  if(ui.edit.ei==null){e.id=uid();day.ex.push(e)}else{const old=day.ex[ui.edit.ei];
   if(old.name!==e.name&&S.sessions.some(s=>s.ex.some(x=>x.name===old.name))&&await askC(`Bisherige Einträge von „${old.name}“ auch umbenennen? Dann laufen Verlauf und Vorschläge weiter.`))S.sessions.forEach(s=>s.ex.forEach(x=>{if(x.name===old.name)x.name=e.name}));
@@ -959,6 +959,8 @@ document.addEventListener('click',e=>{
   if(S.active)return toast('Beende erst die laufende Einheit');
   startWorkout(v,dt);return;
  }
+ if(a==='puok')return puApply();
+ if(a==='puno'){PU=null;return render()}
  if(a==='toimp')return go('mehr');
  if(a==='retry'){CLOUD='laden';CLOUDMSG='';ADB=null;render();return syncLater(!!Object.keys(S.days).length)}
  if(a==='goal'){ui.goal=v;return render()}
@@ -1241,7 +1243,7 @@ function weekStrip(){
  const spät=ls&&daysBetween(ls,todayStr())>=4;
  return `<section class="sec" style="margin-top:14px"><div class="sec-h">
   <h3>Woche ${c.week} von ${c.len}</h3>
-  <span class="mut">Zyklus ${c.n}${c.deload?', Deload':(c.intro?', Intro':'')}</span></div>
+  <span class="mut">Zyklus ${c.n}${weekMode(c)==='deload'?', Deload-Woche':(weekMode(c)==='intro'?', Intro-Woche':'')}</span></div>
  <button class="row" data-a="tab" data-t="training" style="border-top:0;padding:0 0 10px">
   ${dot(dayColor(nx),'lg')}<span class="grow"><b>Nächste Einheit ${esc(nx||'')}</b>
   <small>${(S.plan.days.find(d=>d.name===nx)||{ex:[]}).ex.length} Übungen${ls?`, zuletzt ${agoTxt(ls)}`:''}</small></span>
@@ -1430,6 +1432,53 @@ function bfSheet(){
    Die Dauer trägst du von Hand ein. Die Gewichtsvorschläge kommen aus der zuletzt gespeicherten Einheit dieses Tages.</p>`);
 }
 
+/* ---------- Planupdate ----------
+   Neue Übungen kommen über eine mitgelieferte Datei dazu, nicht über einen Import.
+   Ergänzt wird nur, was im Plan fehlt, bestehende Übungen und der Verlauf bleiben. */
+let PU=null;
+function puMissing(d){
+ let n=0;
+ (d&&d.add||[]).forEach(b=>{
+  const day=((S.plan&&S.plan.days)||[]).find(x=>x.name===b.day);
+  if(!day)return;
+  (b.ex||[]).forEach(x=>{if(!(day.ex||[]).some(y=>y.name===x.name))n++});
+ });
+ return n;
+}
+async function planLoad(){
+ try{
+  const r=await fetch('data/plan-update.json',{cache:'no-cache'});
+  if(!r.ok)return;
+  const d=await r.json();
+  if(!d||!d.v||(num(S.planV)||0)>=d.v)return;
+  if(!puMissing(d))return;
+  PU=d;render();
+ }catch(e){}
+}
+function puBanner(){
+ if(!PU)return '';
+ return `<div class="banner"><div><b>Planupdate: ${esc(PU.name||'')}</b>
+  <span>${esc(PU.note||'')} ${puMissing(PU)} Übungen kommen dazu, vorhandene bleiben unberührt.</span></div>
+  <button data-pa="puok">Übernehmen</button>
+  <button class="ib sm" data-pa="puno" aria-label="Später">✕</button></div>`;
+}
+function puApply(){
+ if(!PU)return;
+ let n=0;
+ (PU.add||[]).forEach(b=>{
+  const day=((S.plan&&S.plan.days)||[]).find(x=>x.name===b.day);
+  if(!day)return;
+  (b.ex||[]).forEach(x=>{
+   if((day.ex||[]).some(y=>y.name===x.name))return;
+   const e=JSON.parse(JSON.stringify(x));e.id=uid();
+   day.ex.push(e);n++;
+  });
+ });
+ S.planV=PU.v;PU=null;
+ save();render();
+ toast(n+' Übungen ergänzt');
+}
+
 /* das gewählte Segment in den sichtbaren Bereich schieben */
 const _render=render;
 render=function(){_render.apply(null,arguments);
@@ -1448,6 +1497,7 @@ render=function(){_render.apply(null,arguments);
  await seedLocal(st);
  syncLater(st);
  phHydrate();
+ planLoad();
 if(S.active)ui.tab='training';render();if(S.active)wake();
  try{if(navigator.storage&&navigator.storage.persisted)navigator.storage.persisted().then(p=>{if(!p&&navigator.storage.persist)navigator.storage.persist()})}catch(e){}
  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})})();
