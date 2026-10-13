@@ -271,6 +271,28 @@ nav.tabs button.on{color:var(--acc)}
  background:none;color:var(--mut);font-weight:600;text-align:center}
 .synced{font-size:12.5px;color:var(--dim);margin:8px 2px 0}
 
+.stgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.stb{display:flex;flex-direction:column;align-items:center;gap:1px;padding:9px 3px 7px;border:0;
+ border-radius:14px;background:var(--s1);color:var(--dim);font:600 10.5px/1.25 var(--sans);text-align:center}
+.stb svg{width:100%;height:24px;display:block}
+.stsvg{fill:#9C7A5C}
+.stsvg .stline{stroke:#9C7A5C}
+.stb b{font:700 13px var(--num);color:var(--mut);margin-top:2px}
+.stb span{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stb .dash{font:700 20px/24px var(--num);color:var(--dim)}
+.stb.on{background:var(--s3);color:var(--tx)}
+.stb.on b{color:var(--tx)}
+.stb.on.ok{box-shadow:inset 0 0 0 2px var(--grn)}
+.stb.on.warn{box-shadow:inset 0 0 0 2px var(--yel)}
+.stb.on.bad{box-shadow:inset 0 0 0 2px var(--red)}
+.stb.none.on{box-shadow:inset 0 0 0 2px var(--line)}
+.stdesc{margin:9px 2px 0;font-size:13px;color:var(--mut);padding-left:10px;
+ border-left:3px solid var(--line);line-height:1.4}
+.stdesc.ok{border-color:var(--grn)}.stdesc.warn{border-color:var(--yel)}.stdesc.bad{border-color:var(--red)}
+.stbar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:10px;background:var(--s2)}
+.stbar i{display:block;height:100%}
+.stbar i.ok{background:var(--grn)}.stbar i.warn{background:var(--yel)}.stbar i.bad{background:var(--red)}
+
 </style>
 </head>
 <body>
@@ -413,7 +435,7 @@ function vHeute(){const d=ui.date,r=S.days[d]||{},L=S.settings.labels,units=S.pl
  h+=`<section class="sec"><h3>Training und Verdauung</h3><div class="card list">
   <div class="srow"><span>Einheit</span><select class="txt w-auto" data-f="unit"><option value="">Keine</option>${units.map(u=>`<option ${r.unit===u?'selected':''}>${esc(u)}</option>`).join('')}${r.unit&&!units.includes(r.unit)?`<option selected>${esc(r.unit)}</option>`:''}</select></div>
   <div class="srow"><span>Bauchtraining</span><button class="tog ${r.abs?'on':''}" data-a="abs" aria-label="Bauchtraining"></button></div>
-  <div class="srow"><span>Stuhlgang</span><div class="step"><button class="ib" data-a="stool" data-d="-1" aria-label="weniger">−</button><b>${num(r.stool)??0}</b><button class="ib" data-a="stool" data-d="1" aria-label="mehr">+</button></div></div></div></section>`;
+  <div class="srow"><span>Stuhlgang</span><div class="step"><button class="ib" data-a="stool" data-d="-1" aria-label="weniger">−</button><b>${num(r.stool)??0}</b><button class="ib" data-a="stool" data-d="1" aria-label="mehr">+</button></div></div></div><h3 class="mt16">Konsistenz nach Bristol-Skala</h3>${stoolPicker(r)}${stoolHist()}</section>`;
  h+=`<section class="sec"><details class="card"${(r.supps||[]).length?' open':''}><summary>Supplements${(r.supps||[]).length?` · ${(r.supps||[]).length}`:''}</summary><div class="chips mt8">${S.settings.supps.map(s=>chip(s,(r.supps||[]).includes(s),'supp')).join('')}</div><button class="link mt8" data-a="suppall">Alle abhaken</button></details></section>`;
  h+=`<section class="sec"><h3>Tags</h3><div class="chips">${S.settings.tags.map(s=>chip(s,(r.tags||[]).includes(s),'tag')).join('')}</div><div class="addrow"><input class="txt" id="newtag" placeholder="Neuer Tag"><button class="ib" data-a="addtag" aria-label="Tag hinzufügen">+</button></div></section>`;
  h+=`<section class="sec"><h3>Notiz</h3><textarea class="txt" rows="3" data-f="note" placeholder="Wie lief der Tag?">${esc(r.note||'')}</textarea></section>`;
@@ -959,6 +981,12 @@ document.addEventListener('click',e=>{
   if(S.active)return toast('Beende erst die laufende Einheit');
   startWorkout(v,dt);return;
  }
+ if(a==='stype'){
+  const t=+v,r=dayRec(ui.date);
+  if(!t||num(r.stoolT)===t)delete r.stoolT;else r.stoolT=t;
+  if(!Object.keys(r).length)delete S.days[ui.date];
+  save();return render();
+ }
  if(a==='puok')return puApply();
  if(a==='puno'){PU=null;return render()}
  if(a==='toimp')return go('mehr');
@@ -1430,6 +1458,54 @@ function bfSheet(){
   <div class="menu">${days.map(d=>`<button data-pa="bfstart" data-v="${esc(d.name)}">${esc(d.name)}</button>`).join('')}</div>
   <p class="hint">Sie wird mit dem gewählten Datum gespeichert, die Stoppuhr läuft nicht mit.
    Die Dauer trägst du von Hand ein. Die Gewichtsvorschläge kommen aus der zuletzt gespeicherten Einheit dieses Tages.</p>`);
+}
+
+/* ---------- Bristol-Skala ----------
+   Eigene Zeichnungen, keine Fotos. Die Skala beschreibt die Passagezeit im Darm,
+   sie ist kein Befund. Einzelne Tage sagen nichts, das Muster über Wochen schon. */
+const STOOL=[
+ {n:1,t:'Harte Kugeln',d:'Einzelne harte Kugeln, schwer abzusetzen. Deutlich verlangsamte Passage.',c:'bad'},
+ {n:2,t:'Klumpig',d:'Wurstförmig, aber aus Klumpen zusammengesetzt. War zu lange im Darm.',c:'warn'},
+ {n:3,t:'Rissig',d:'Wurstförmig mit Rissen an der Oberfläche. Im guten Bereich.',c:'ok'},
+ {n:4,t:'Glatt',d:'Wurst- oder schlangenförmig, glatt und weich. Der Zielbereich.',c:'ok'},
+ {n:5,t:'Weiche Stücke',d:'Weiche Stücke mit klaren Rändern, leicht abzusetzen. Noch im Rahmen, eher schnell.',c:'ok'},
+ {n:6,t:'Breiig',d:'Flockige Stücke mit ausgefransten Rändern, breiig. Beschleunigte Passage.',c:'warn'},
+ {n:7,t:'Flüssig',d:'Wässrig, keine festen Bestandteile. Durchfall.',c:'bad'}];
+const STPATH={
+ 1:'<circle cx="11" cy="17" r="5.2"/><circle cx="24" cy="15" r="5.8"/><circle cx="37" cy="17.5" r="4.8"/>',
+ 2:'<path d="M7 16q0-6 7-6 3 0 5 1.6Q21 9 25 9t6 2.6Q33 10 36 10q7 0 7 6t-7 6q-3 0-5-1.6Q29 23 25 23t-6-2.6Q17 22 14 22q-7 0-7-6z"/>',
+ 3:'<rect x="6" y="11" width="36" height="11" rx="5.5"/><path d="M15 12.4v8.2M24 11.6v8.8M33 12.4v8.2" stroke="var(--s2)" stroke-width="1.7" fill="none"/>',
+ 4:'<path d="M8 20q6-9 16-4t16-4" fill="none" stroke-width="9" stroke-linecap="round" class="stline"/>',
+ 5:'<path d="M5 22q0-8.5 7-8.5t7 8.5z"/><path d="M20.5 22q0-6.5 5-6.5t5 6.5z"/><path d="M32 22q0-7.5 5.5-7.5T43 22z"/>',
+ 6:'<path d="M9 14.5l4-3.5 3 3 4-3 2.5 4 4.5-4 3 4 4-2.5 2.5 4.5-2.5 4-4 1.5-5-1-4 2-5-2-4 1-3.5-3z"/>',
+ 7:'<path d="M3 19.5q5.5-3.5 10.5-1t10.5-2 10.5 2T45 19.5v1q0 3.5-5 3.5H8q-5 0-5-3.5z"/>'};
+const stoolSVG=n=>`<svg viewBox="0 0 48 32" class="stsvg" aria-hidden="true">${STPATH[n]}</svg>`;
+const stoolOf=n=>STOOL.find(s=>s.n===n)||null;
+
+function stoolPicker(r){
+ const cur=num(r.stoolT),s=cur?stoolOf(cur):null;
+ return `<div class="stgrid">${STOOL.map(x=>
+  `<button class="stb ${cur===x.n?'on '+x.c:''}" data-pa="stype" data-v="${x.n}" aria-label="Typ ${x.n}, ${esc(x.t)}">
+   ${stoolSVG(x.n)}<b>${x.n}</b><span>${esc(x.t)}</span></button>`).join('')}
+  <button class="stb none ${cur?'':'on'}" data-pa="stype" data-v="0" aria-label="Kein Eintrag"><span class="dash">–</span><b>&nbsp;</b><span>kein Eintrag</span></button></div>
+ ${s?`<p class="stdesc ${s.c}">${esc(s.d)}</p>`:''}`;
+}
+
+function stoolHist(){
+ const days=[];
+ for(let i=0;i<30;i++){const r=S.days[addDays(todayStr(),-i)],t=r&&num(r.stoolT);if(t)days.push(t)}
+ if(days.length<3)return '';
+ const cnt={},n=days.length;
+ days.forEach(t=>{cnt[t]=(cnt[t]||0)+1});
+ const ziel=days.filter(t=>t>=3&&t<=5).length;
+ const bar=STOOL.filter(x=>cnt[x.n]).map(x=>
+  `<i class="${x.c}" style="width:${(cnt[x.n]/n*100).toFixed(1)}%" title="Typ ${x.n}: ${cnt[x.n]}"></i>`).join('');
+ return `<details class="card mt8"><summary>Letzte 30 Tage · ${Math.round(ziel/n*100)} % im Zielbereich</summary>
+  <div class="stbar">${bar}</div>
+  <table class="t mt8"><tr><th>Typ</th><th>Tage</th><th>Anteil</th></tr>
+  ${STOOL.filter(x=>cnt[x.n]).map(x=>`<tr><td>${x.n} ${esc(x.t)}</td><td>${cnt[x.n]}</td><td>${Math.round(cnt[x.n]/n*100)} %</td></tr>`).join('')}</table>
+  <p class="hint">Typ 3 bis 5 gilt als normal, 4 als Ziel. Gewertet werden ${n} Tage mit Eintrag.
+  Einzelne Ausreißer bedeuten nichts, erst ein Muster über Wochen ist eine Aussage.</p></details>`;
 }
 
 /* ---------- Planupdate ----------
