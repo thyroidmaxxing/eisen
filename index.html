@@ -1512,14 +1512,19 @@ function stoolHist(){
    Neue Übungen kommen über eine mitgelieferte Datei dazu, nicht über einen Import.
    Ergänzt wird nur, was im Plan fehlt, bestehende Übungen und der Verlauf bleiben. */
 let PU=null;
+const puDay=n=>((S.plan&&S.plan.days)||[]).find(x=>x.name===n);
 function puMissing(d){
- let n=0;
- (d&&d.add||[]).forEach(b=>{
-  const day=((S.plan&&S.plan.days)||[]).find(x=>x.name===b.day);
-  if(!day)return;
-  (b.ex||[]).forEach(x=>{if(!(day.ex||[]).some(y=>y.name===x.name))n++});
- });
- return n;
+ let add=0,del=0;
+ (d&&d.add||[]).forEach(b=>{const day=puDay(b.day);if(!day)return;
+  (b.ex||[]).forEach(x=>{if(!(day.ex||[]).some(y=>y.name===x.name))add++})});
+ (d&&d.del||[]).forEach(b=>{const day=puDay(b.day);if(!day)return;
+  (b.ex||[]).forEach(nm=>{if((day.ex||[]).some(y=>y.name===nm))del++})});
+ return {add,del,n:add+del};
+}
+function puTxt(d){const m=puMissing(d),p=[];
+ if(m.add)p.push(m.add+(m.add>1?' Übungen kommen dazu':' Übung kommt dazu'));
+ if(m.del)p.push(m.del+(m.del>1?' fallen weg':' fällt weg'));
+ return p.join(', ')+'. Dein Verlauf bleibt vollständig erhalten.';
 }
 async function planLoad(){
  try{
@@ -1527,32 +1532,31 @@ async function planLoad(){
   if(!r.ok)return;
   const d=await r.json();
   if(!d||!d.v||(num(S.planV)||0)>=d.v)return;
-  if(!puMissing(d))return;
+  if(!puMissing(d).n)return;
   PU=d;render();
  }catch(e){}
 }
 function puBanner(){
  if(!PU)return '';
  return `<div class="banner"><div><b>Planupdate: ${esc(PU.name||'')}</b>
-  <span>${esc(PU.note||'')} ${puMissing(PU)} Übungen kommen dazu, vorhandene bleiben unberührt.</span></div>
+  <span>${esc(PU.note||'')} ${esc(puTxt(PU))}</span></div>
   <button data-pa="puok">Übernehmen</button>
   <button class="ib sm" data-pa="puno" aria-label="Später">✕</button></div>`;
 }
 function puApply(){
  if(!PU)return;
- let n=0;
- (PU.add||[]).forEach(b=>{
-  const day=((S.plan&&S.plan.days)||[]).find(x=>x.name===b.day);
-  if(!day)return;
+ let a=0,r=0;
+ (PU.del||[]).forEach(b=>{const day=puDay(b.day);if(!day)return;
+  (b.ex||[]).forEach(nm=>{const i=(day.ex||[]).findIndex(y=>y.name===nm);
+   if(i>=0){day.ex.splice(i,1);r++}})});
+ (PU.add||[]).forEach(b=>{const day=puDay(b.day);if(!day)return;
   (b.ex||[]).forEach(x=>{
    if((day.ex||[]).some(y=>y.name===x.name))return;
    const e=JSON.parse(JSON.stringify(x));e.id=uid();
-   day.ex.push(e);n++;
-  });
- });
+   day.ex.push(e);a++})});
  S.planV=PU.v;PU=null;
  save();render();
- toast(n+' Übungen ergänzt');
+ toast(a?(a+' ergänzt'+(r?', '+r+' entfernt':'')):(r+' entfernt'));
 }
 
 /* das gewählte Segment in den sichtbaren Bereich schieben */
