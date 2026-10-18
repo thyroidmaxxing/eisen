@@ -308,8 +308,9 @@ nav.tabs button.on{color:var(--acc)}
 .ri em{display:block;font-style:normal;font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.35}
 .ri.achtung em{color:var(--mut)}.ri.stop em{color:var(--mut)}
 .setup.gear{background:none;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
-.t td.ref-hi{color:var(--yel);font-weight:650}
-.t td.ref-lo{color:var(--blue);font-weight:650}
+.t td.ref-ziel-hi{color:var(--yel)}
+.t td.ref-ziel-lo{color:var(--blue)}
+.t td.ref-hart-hi,.t td.ref-hart-lo{color:var(--red);font-weight:700}
 
 </style>
 </head>
@@ -594,7 +595,7 @@ function hBlut(){const MKs=S.settings.markers,b=last(S.blood),U={};MKs.forEach(m
  const withV=[...new Set(S.blood.flatMap(x=>Object.keys(x.vals)))];
  if(withV.length){if(!withV.includes(ui.bm))ui.bm=withV[0];const pts=S.blood.map(x=>[x.date,num(x.vals[ui.bm])]).filter(p=>p[1]!=null),yy=d=>fDs(d)+String(d).slice(2,4);
   h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="bm">${withV.map(n=>`<option ${n===ui.bm?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.bm,empty:'Für einen Verlauf braucht es mindestens zwei Werte.'})}</div></section>`;
-  const outs=withV.filter(n=>['lo','hi'].includes(refState(n,num(last(S.blood.filter(x=>num(x.vals[n])!=null))?.vals[n]))));h+=`<section class="sec"><h3>Letzte Werte</h3>${outs.length?`<p class="hint" style="margin-top:0">${outs.length} Wert${outs.length>1?'e liegen':' liegt'} außerhalb des Bereichs: ${esc(outs.join(', '))}. ${outs.some(n=>REFTRAIN.includes(n))?'Achtung, CK, GOT, GPT und Kreatinin sind nach harten Einheiten regelmäßig erhöht, ohne dass etwas vorliegt. Für eine brauchbare Abnahme mindestens 48 Stunden Abstand zum Training.':''}</p>`:''}<div class="card"><table class="t"><thead><tr><th>Marker</th><th>Aktuell</th><th>Vorher</th></tr></thead><tbody>${withV.map(n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null),a=last(v),p=v[v.length-2];const mk=MKs.find(x=>x.n===n)||{},rs=refState(n,num(a.vals[n]));return `<tr><td>${esc(n)}<small>${esc(U[n]||'')}${refTxt(mk)?' \u00b7 '+esc(refTxt(mk)):''}</small></td><td class="ref-${rs}">${dv(a.vals[n])} ${REFMARK[rs]||''}<small>${yy(a.date)}</small></td><td class="ref-${refState(n,p?num(p.vals[n]):null)}">${p?`${dv(p.vals[n])}<small>${yy(p.date)}</small>`:'–'}</td></tr>`}).join('')}</tbody></table></div></section>`}
+  const lw=n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null);return v.length?num(last(v).vals[n]):null};const hart=withV.filter(n=>REFHART(refState(n,lw(n))));const weich=withV.filter(n=>['ziel-lo','ziel-hi'].includes(refState(n,lw(n))));h+=`<section class="sec"><h3>Letzte Werte</h3>${hart.length?`<p class="hint" style="margin-top:0;color:var(--red)">Außerhalb des Laborbereichs: ${esc(hart.join(', '))}.</p>`:''}${weich.length?`<p class="hint" style="margin-top:0">Im Laborbereich, aber außerhalb deines Zielbereichs: ${esc(weich.join(', '))}.</p>`:''}${hart.concat(weich).some(n=>REFTRAIN.includes(n))?`<p class="hint" style="margin-top:0">CK, Kreatinin und die daraus gerechnete eGFR sind nach harten Einheiten regelmäßig verschoben, ohne dass etwas vorliegt. Für eine brauchbare Abnahme mindestens 48 Stunden Abstand zum Training.</p>`:''}<div class="card"><table class="t"><thead><tr><th>Marker</th><th>Aktuell</th><th>Vorher</th></tr></thead><tbody>${withV.map(n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null),a=last(v),p=v[v.length-2];const mk=MKs.find(x=>x.n===n)||{},rs=refState(n,num(a.vals[n]));return `<tr><td>${esc(n)}<small>${esc(U[n]||'')}${refTxt(mk)?' \u00b7 '+esc(refTxt(mk)):''}</small></td><td class="ref-${rs}">${dv(a.vals[n])} ${REFMARK[rs]||''}<small>${yy(a.date)}</small></td><td class="ref-${refState(n,p?num(p.vals[n]):null)}">${p?`${dv(p.vals[n])}<small>${yy(p.date)}</small>`:'–'}</td></tr>`}).join('')}</tbody></table></div></section>`}
  return h+entryList('blood','bdel')}
 function hVert(){const f=ui.tform;
  let h=`<div class="card"><label class="lbl">Lebensmittel oder Supplement<input class="txt" data-form="tform.name" value="${esc(f.name)}" placeholder="z. B. Laktose, Zwiebeln, Ashwagandha"></label><div class="chips mt8">${RORD.map(r=>`<button class="chip ${f.rate===r?'on':''}" data-a="tolpick" data-v="${r}">${dot(RATE[r])}${r}</button>`).join('')}</div><label class="lbl mt8">Notiz<input class="txt" data-form="tform.note" value="${esc(f.note)}" placeholder="Was passiert, bei welcher Menge?"></label><button class="primary" data-a="toladd">Eintragen</button></div>`;
@@ -609,7 +610,7 @@ function vMehr(){const st=S.settings;
  <section class="sec"><h3>Namen der Vitalfelder</h3><div class="grid2">${st.labels.map((l,i)=>`<input class="txt" data-lbl="${i}" value="${esc(l)}">`).join('')}</div></section>
  ${[['supps','Supplements'],['tags','Tags'],['pre','Pre-Workout-Optionen'],['mfields','Messfelder']].map(([k,l])=>`<section class="sec"><h3>${l}</h3><textarea class="txt" rows="4" data-list="${k}">${esc(st[k].join('\n'))}</textarea></section>`).join('')}
  <p class="hint">Eine Zeile pro Eintrag. Gespeichert wird beim Verlassen des Feldes.</p>
- <section class="sec"><h3>Blutmarker</h3><textarea class="txt" rows="8" data-list="markers">${esc(st.markers.map(m=>`${m.n} | ${m.u}${refTxt(m)?' | '+refTxt(m):''}`).join('\n'))}</textarea><p class="hint">Name, Einheit und Referenzbereich, getrennt durch senkrechte Striche. Der Bereich geht als „0,4 bis 4“, „ab 40“ oder „bis 150“. Vorbelegt sind Orientierungswerte für erwachsene Männer, verbindlich ist der Bereich auf deinem Laborbefund.</p></section>
+ <section class="sec"><h3>Blutmarker</h3><textarea class="txt" rows="8" data-list="markers">${esc(st.markers.map(m=>`${m.n} | ${m.u}${refTxt(m)?' | '+refTxt(m):''}`).join('\n'))}</textarea><p class="hint">Name, Einheit und Referenzbereich, getrennt durch senkrechte Striche. Der Bereich geht als „0,4 bis 4“, „ab 40“ oder „bis 150“. Vorbelegt ist hier dein <b>Zielbereich</b>, nicht der Laborbereich. Die App kennt den Laborbereich zusätzlich: ein Wert außerhalb deines Ziels wird mit einem Dreieck markiert, außerhalb des Laborbereichs mit zwei und in Rot. Zielbereiche sind deutlich schlechter belegt als Laborbereiche, nimm sie als Richtung, nicht als Befund.</p></section>
  <section class="sec"><h3>Zurücksetzen</h3><button class="ghost danger" data-a="reset">Alle Daten auf diesem Gerät löschen</button><p class="hint">Eisen, Version 1</p></section>`}
 function persistStatus(){const el=$('#persist');if(!el)return;if(!navigator.storage||!navigator.storage.persisted){el.textContent='nicht verfügbar';return}navigator.storage.persisted().then(p=>{el.innerHTML=p?'Ja':'<button class="link" data-a="persist">Anfragen</button>'})}
 
@@ -1664,26 +1665,41 @@ function readyCard(d){
    Orientierungswerte für erwachsene Männer. Labore rechnen mit eigenen Bereichen,
    verbindlich ist immer der Befund. Die Werte sind in den Einstellungen änderbar. */
 const REF={
+ 'TSH':[0.5,2.5],'fT3':[3,4.2],'fT4':[1.1,1.6],'TPO-AK':[null,10],'Tg-AK':[null,20],
+ 'Testosteron gesamt':[550,1000],'SHBG':[20,45],'Albumin':[4.2,5],
+ 'Estradiol':[20,35],'Progesteron':[0.1,0.5],'LH':[2,7],'FSH':[2,8],
+ 'Prolaktin':[null,10],'DHEA-S':[250,449],
+ 'Ferritin':[50,150],'Eisen (Serum)':[70,140],'Transferrin':[220,330],
+ 'Transferrinsättigung':[25,40],'Löslicher Transferrinrezeptor':[null,1.5],
+ 'Hämatokrit':[42,50],'Hämoglobin':[14,17],
+ 'Glukose nüchtern':[75,90],'Insulin nüchtern':[2,6],'HOMA-Index':[null,1],'HbA1c':[4.8,5.3],
+ 'ApoB':[null,80],'LDL':[null,100],'HDL':[50,null],'Triglyceride':[null,90],
+ 'Homocystein':[5,9],'GGT':[null,25],
+ 'Kreatinin':[0.7,1.2],'Cystatin C':[null,0.85],
+ 'eGFR (Cystatin C)':[100,null],'eGFR (Kreatinin)':[90,null],
+ 'CK':[39,308],'hs-Troponin T':[null,6],'NT-proBNP':[null,50],
+ 'Vitamin D (25-OH)':[40,60],'Vitamin A (Retinol)':[400,800],'Kupfer':[80,130]};
+/* Der Laborbereich daneben. Ausserhalb davon faerbt die App kraeftiger,
+   weil das dann kein Zielwert mehr ist, sondern ein Befund. */
+const REFLAB={
  'TSH':[0.4,4],'fT3':[2.3,4.2],'fT4':[0.8,1.8],'TPO-AK':[null,34],'Tg-AK':[null,115],
- 'Testosteron gesamt':[300,1000],'Testosteron frei':[50,210],'Estradiol':[10,40],
- 'SHBG':[18,54],'LH':[1.7,8.6],'FSH':[1.5,12.4],'Prolaktin':[4,15],
- 'DHEA-S':[160,449],'Cortisol morgens':[6,23],
- 'Hämatokrit':[40,52],'Hämoglobin':[13.5,17.5],'Ferritin':[30,400],
- 'Vitamin D (25-OH)':[30,70],'HbA1c':[4,5.6],'Glukose nüchtern':[70,99],
- 'LDL':[null,116],'HDL':[40,null],'Triglyceride':[null,150],
- 'GOT (AST)':[10,50],'GPT (ALT)':[10,50],'GGT':[10,71],
- 'Kreatinin':[0.7,1.2],'CK':[39,308],
- 'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140],
- 'Eisen (Serum)':[59,158],'Transferrin':[200,360],'Transferrinsättigung':[16,45],
- 'Löslicher Transferrinrezeptor':[0.76,1.76],'Progesteron':[0.1,0.5],
- 'Albumin':[3.5,5.2],'Cystatin C':[0.5,0.96],
+ 'Testosteron gesamt':[300,1000],'SHBG':[18,54],'Albumin':[3.5,5.2],
+ 'Estradiol':[10,40],'Progesteron':[0.1,0.5],'LH':[1.7,8.6],'FSH':[1.5,12.4],
+ 'Prolaktin':[4,15],'DHEA-S':[160,449],
+ 'Ferritin':[30,400],'Eisen (Serum)':[59,158],'Transferrin':[200,360],
+ 'Transferrinsättigung':[16,45],'Löslicher Transferrinrezeptor':[0.76,1.76],
+ 'Hämatokrit':[40,52],'Hämoglobin':[13.5,17.5],
+ 'Glukose nüchtern':[70,99],'Insulin nüchtern':[2,25],'HOMA-Index':[null,2],'HbA1c':[4,5.6],
+ 'ApoB':[null,100],'LDL':[null,116],'HDL':[40,null],'Triglyceride':[null,150],
+ 'Homocystein':[5,12],'GGT':[10,71],
+ 'Kreatinin':[0.7,1.2],'Cystatin C':[0.5,0.96],
  'eGFR (Cystatin C)':[90,null],'eGFR (Kreatinin)':[90,null],
- 'Insulin nüchtern':[2,25],'HOMA-Index':[null,2],'ApoB':[null,100],
- 'Homocystein':[5,12],'CK-MB':[null,24],'NT-proBNP':[null,125]};
+ 'CK':[39,308],'hs-Troponin T':[null,14],'NT-proBNP':[null,125],
+ 'Vitamin D (25-OH)':[30,70],'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140]};
 /* Panel-Umbau: vier raus, fünfzehn rein, nach Gruppen sortiert.
    Wird einmal angewandt, danach steht mkV und es passiert nichts mehr. */
-const MKV=2;
-const MKDROP=['Cortisol morgens','Testosteron frei','GOT (AST)','GPT (ALT)'];
+const MKV=3;
+const MKDROP=['Cortisol morgens','Testosteron frei','GOT (AST)','GPT (ALT)','CK-MB'];
 const MKLIST=[
  ['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],
  ['Testosteron gesamt','ng/dl'],['SHBG','nmol/l'],['Albumin','g/dl'],['Estradiol','pg/ml'],
@@ -1697,16 +1713,22 @@ const MKLIST=[
  ['GGT','U/l'],
  ['Kreatinin','mg/dl'],['Cystatin C','mg/l'],
  ['eGFR (Cystatin C)','ml/min'],['eGFR (Kreatinin)','ml/min'],
- ['CK','U/l'],['CK-MB','U/l'],['NT-proBNP','pg/ml'],
+ ['CK','U/l'],['hs-Troponin T','ng/l'],['NT-proBNP','pg/ml'],
  ['Vitamin D (25-OH)','ng/ml'],['Vitamin A (Retinol)','µg/l'],['Kupfer','µg/dl']];
 function markerSync(){
  if((num(S.settings.mkV)||0)>=MKV)return 0;
  const old=S.settings.markers||[],by={};
  old.forEach(m=>{by[m.n]=m});
+ const gl=(a,b)=>(a==null&&b==null)||(a!=null&&b!=null&&Math.abs(a-b)<1e-9);
+ const eigenerBereich=(o,n)=>{const L=REFLAB[n];
+  if(!L)return o.lo!==undefined||o.hi!==undefined;
+  return !(gl(o.lo==null?null:o.lo,L[0])&&gl(o.hi==null?null:o.hi,L[1]))};
  const out=MKLIST.map(([n,u])=>{const o=by[n]||{};
   const m={n:n,u:o.u||u};
-  if(o.lo!==undefined)m.lo=o.lo;
-  if(o.hi!==undefined)m.hi=o.hi;
+  if(eigenerBereich(o,n)){
+   if(o.lo!==undefined)m.lo=o.lo;
+   if(o.hi!==undefined)m.hi=o.hi;
+  }
   return m});
  const eigen=old.filter(m=>!MKLIST.some(x=>x[0]===m.n)&&!MKDROP.includes(m.n));
  S.settings.markers=out.concat(eigen);
@@ -1714,7 +1736,7 @@ function markerSync(){
  return 1;
 }
 /* Marker, die nach harten Einheiten regelmäßig erhöht sind */
-const REFTRAIN=['CK','CK-MB','Kreatinin','eGFR (Kreatinin)','GOT (AST)','GPT (ALT)'];
+const REFTRAIN=['CK','Kreatinin','eGFR (Kreatinin)','GOT (AST)','GPT (ALT)','CK-MB'];
 function refFill(){
  let n=0;
  (S.settings.markers||[]).forEach(m=>{
@@ -1733,12 +1755,19 @@ function refTxt(m){
 function refState(name,v){
  const m=(S.settings.markers||[]).find(x=>x.n===name);
  if(!m||v==null)return '';
- if(m.lo!=null&&v<m.lo)return 'lo';
- if(m.hi!=null&&v>m.hi)return 'hi';
+ const L=REFLAB[name];
+ if(L){
+  if(L[0]!=null&&v<L[0])return 'hart-lo';
+  if(L[1]!=null&&v>L[1])return 'hart-hi';
+ }
+ if(m.lo!=null&&v<m.lo)return 'ziel-lo';
+ if(m.hi!=null&&v>m.hi)return 'ziel-hi';
  if(m.lo==null&&m.hi==null)return '';
  return 'in';
 }
-const REFMARK={lo:'\u25bc',hi:'\u25b2',in:''};
+const REFMARK={'hart-lo':'\u25bc\u25bc','hart-hi':'\u25b2\u25b2',
+ 'ziel-lo':'\u25bc','ziel-hi':'\u25b2',in:''};
+const REFHART=s=>s==='hart-lo'||s==='hart-hi';
 
 /* ---------- Zyklusvergleich ---------- */
 function cycList(){
