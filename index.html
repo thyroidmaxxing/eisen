@@ -595,7 +595,7 @@ function hBlut(){const MKs=S.settings.markers,b=last(S.blood),U={};MKs.forEach(m
  const withV=[...new Set(S.blood.flatMap(x=>Object.keys(x.vals)))];
  if(withV.length){if(!withV.includes(ui.bm))ui.bm=withV[0];const pts=S.blood.map(x=>[x.date,num(x.vals[ui.bm])]).filter(p=>p[1]!=null),yy=d=>fDs(d)+String(d).slice(2,4);
   h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="bm">${withV.map(n=>`<option ${n===ui.bm?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.bm,empty:'Für einen Verlauf braucht es mindestens zwei Werte.'})}</div></section>`;
-  const lw=n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null);return v.length?num(last(v).vals[n]):null};const hart=withV.filter(n=>REFHART(refState(n,lw(n))));const weich=withV.filter(n=>['ziel-lo','ziel-hi'].includes(refState(n,lw(n))));h+=`<section class="sec"><h3>Letzte Werte</h3>${hart.length?`<p class="hint" style="margin-top:0;color:var(--red)">Außerhalb des Laborbereichs: ${esc(hart.join(', '))}.</p>`:''}${weich.length?`<p class="hint" style="margin-top:0">Im Laborbereich, aber außerhalb deines Zielbereichs: ${esc(weich.join(', '))}.</p>`:''}${hart.concat(weich).some(n=>REFTRAIN.includes(n))?`<p class="hint" style="margin-top:0">CK, Kreatinin und die daraus gerechnete eGFR sind nach harten Einheiten regelmäßig verschoben, ohne dass etwas vorliegt. Für eine brauchbare Abnahme mindestens 48 Stunden Abstand zum Training.</p>`:''}<div class="card"><table class="t"><thead><tr><th>Marker</th><th>Aktuell</th><th>Vorher</th></tr></thead><tbody>${withV.map(n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null),a=last(v),p=v[v.length-2];const mk=MKs.find(x=>x.n===n)||{},rs=refState(n,num(a.vals[n]));return `<tr><td>${esc(n)}<small>${esc(U[n]||'')}${refTxt(mk)?' \u00b7 '+esc(refTxt(mk)):''}</small></td><td class="ref-${rs}">${dv(a.vals[n])} ${REFMARK[rs]||''}<small>${yy(a.date)}</small></td><td class="ref-${refState(n,p?num(p.vals[n]):null)}">${p?`${dv(p.vals[n])}<small>${yy(p.date)}</small>`:'–'}</td></tr>`}).join('')}</tbody></table></div></section>`}
+  const lw=n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null);return v.length?num(last(v).vals[n]):null};const hart=withV.filter(n=>REFHART(refState(n,lw(n))));const weich=withV.filter(n=>['ziel-lo','ziel-hi'].includes(refState(n,lw(n))));h+=`<section class="sec"><h3>Letzte Werte</h3>${hart.length?`<p class="hint" style="margin-top:0;color:var(--red)">Außerhalb des Laborbereichs: ${esc(hart.join(', '))}.</p>`:''}${weich.length?`<p class="hint" style="margin-top:0">Im Laborbereich, aber außerhalb deines Zielbereichs: ${esc(weich.join(', '))}.</p>`:''}${hart.concat(weich).some(n=>REFTRAIN.includes(n))?`<p class="hint" style="margin-top:0">CK, hs-CRP, Kreatinin und die daraus gerechnete eGFR sind nach harten Einheiten regelmäßig verschoben, ohne dass etwas vorliegt. Für eine brauchbare Abnahme mindestens 48 Stunden Abstand zum Training.</p>`:''}<div class="card"><table class="t"><thead><tr><th>Marker</th><th>Aktuell</th><th>Vorher</th></tr></thead><tbody>${withV.map(n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null),a=last(v),p=v[v.length-2];const mk=MKs.find(x=>x.n===n)||{},rs=refState(n,num(a.vals[n]));return `<tr><td>${esc(n)}<small>${esc(U[n]||'')}${refTxt(mk)?' \u00b7 '+esc(refTxt(mk)):''}</small></td><td class="ref-${rs}">${dv(a.vals[n])} ${REFMARK[rs]||''}<small>${yy(a.date)}</small></td><td class="ref-${refState(n,p?num(p.vals[n]):null)}">${p?`${dv(p.vals[n])}<small>${yy(p.date)}</small>`:'–'}</td></tr>`}).join('')}</tbody></table></div></section>`}
  return h+entryList('blood','bdel')}
 function hVert(){const f=ui.tform;
  let h=`<div class="card"><label class="lbl">Lebensmittel oder Supplement<input class="txt" data-form="tform.name" value="${esc(f.name)}" placeholder="z. B. Laktose, Zwiebeln, Ashwagandha"></label><div class="chips mt8">${RORD.map(r=>`<button class="chip ${f.rate===r?'on':''}" data-a="tolpick" data-v="${r}">${dot(RATE[r])}${r}</button>`).join('')}</div><label class="lbl mt8">Notiz<input class="txt" data-form="tform.note" value="${esc(f.note)}" placeholder="Was passiert, bei welcher Menge?"></label><button class="primary" data-a="toladd">Eintragen</button></div>`;
@@ -1674,7 +1674,7 @@ const REF={
  'Hämatokrit':[42,50],'Hämoglobin':[14,17],
  'Glukose nüchtern':[75,90],'Insulin nüchtern':[2,6],'HOMA-Index':[null,1],'HbA1c':[4.8,5.3],
  'ApoB':[null,80],'LDL':[null,100],'HDL':[50,null],'Triglyceride':[null,90],
- 'Homocystein':[5,9],'GGT':[null,25],
+ 'Homocystein':[5,9],'hs-CRP':[null,1],'GGT':[null,25],
  'Kreatinin':[0.7,1.2],'Cystatin C':[null,0.85],
  'eGFR (Cystatin C)':[100,null],'eGFR (Kreatinin)':[90,null],
  'CK':[39,308],'hs-Troponin T':[null,6],'NT-proBNP':[null,50],
@@ -1691,14 +1691,14 @@ const REFLAB={
  'Hämatokrit':[40,52],'Hämoglobin':[13.5,17.5],
  'Glukose nüchtern':[70,99],'Insulin nüchtern':[2,25],'HOMA-Index':[null,2],'HbA1c':[4,5.6],
  'ApoB':[null,100],'LDL':[null,116],'HDL':[40,null],'Triglyceride':[null,150],
- 'Homocystein':[5,12],'GGT':[10,71],
+ 'Homocystein':[5,12],'hs-CRP':[null,3],'GGT':[10,71],
  'Kreatinin':[0.7,1.2],'Cystatin C':[0.5,0.96],
  'eGFR (Cystatin C)':[90,null],'eGFR (Kreatinin)':[90,null],
  'CK':[39,308],'hs-Troponin T':[null,14],'NT-proBNP':[null,125],
  'Vitamin D (25-OH)':[30,70],'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140]};
 /* Panel-Umbau: vier raus, fünfzehn rein, nach Gruppen sortiert.
    Wird einmal angewandt, danach steht mkV und es passiert nichts mehr. */
-const MKV=3;
+const MKV=4;
 const MKDROP=['Cortisol morgens','Testosteron frei','GOT (AST)','GPT (ALT)','CK-MB'];
 const MKLIST=[
  ['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],
@@ -1709,7 +1709,7 @@ const MKLIST=[
  ['Hämatokrit','%'],['Hämoglobin','g/dl'],
  ['Glukose nüchtern','mg/dl'],['Insulin nüchtern','µU/ml'],['HOMA-Index',''],['HbA1c','%'],
  ['ApoB','mg/dl'],['LDL','mg/dl'],['HDL','mg/dl'],['Triglyceride','mg/dl'],
- ['Homocystein','µmol/l'],
+ ['Homocystein','µmol/l'],['hs-CRP','mg/l'],
  ['GGT','U/l'],
  ['Kreatinin','mg/dl'],['Cystatin C','mg/l'],
  ['eGFR (Cystatin C)','ml/min'],['eGFR (Kreatinin)','ml/min'],
@@ -1736,7 +1736,7 @@ function markerSync(){
  return 1;
 }
 /* Marker, die nach harten Einheiten regelmäßig erhöht sind */
-const REFTRAIN=['CK','Kreatinin','eGFR (Kreatinin)','GOT (AST)','GPT (ALT)','CK-MB'];
+const REFTRAIN=['CK','hs-CRP','Kreatinin','eGFR (Kreatinin)','GOT (AST)','GPT (ALT)','CK-MB'];
 function refFill(){
  let n=0;
  (S.settings.markers||[]).forEach(m=>{
