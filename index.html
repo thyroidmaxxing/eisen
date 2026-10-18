@@ -1673,9 +1673,48 @@ const REF={
  'LDL':[null,116],'HDL':[40,null],'Triglyceride':[null,150],
  'GOT (AST)':[10,50],'GPT (ALT)':[10,50],'GGT':[10,71],
  'Kreatinin':[0.7,1.2],'CK':[39,308],
- 'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140]};
+ 'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140],
+ 'Eisen (Serum)':[59,158],'Transferrin':[200,360],'Transferrinsättigung':[16,45],
+ 'Löslicher Transferrinrezeptor':[0.76,1.76],'Progesteron':[0.1,0.5],
+ 'Albumin':[3.5,5.2],'Cystatin C':[0.5,0.96],
+ 'eGFR (Cystatin C)':[90,null],'eGFR (Kreatinin)':[90,null],
+ 'Insulin nüchtern':[2,25],'HOMA-Index':[null,2],'ApoB':[null,100],
+ 'Homocystein':[5,12],'CK-MB':[null,24],'NT-proBNP':[null,125]};
+/* Panel-Umbau: vier raus, fünfzehn rein, nach Gruppen sortiert.
+   Wird einmal angewandt, danach steht mkV und es passiert nichts mehr. */
+const MKV=2;
+const MKDROP=['Cortisol morgens','Testosteron frei','GOT (AST)','GPT (ALT)'];
+const MKLIST=[
+ ['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],
+ ['Testosteron gesamt','ng/dl'],['SHBG','nmol/l'],['Albumin','g/dl'],['Estradiol','pg/ml'],
+ ['Progesteron','ng/ml'],['LH','U/l'],['FSH','U/l'],['Prolaktin','ng/ml'],['DHEA-S','µg/dl'],
+ ['Ferritin','ng/ml'],['Eisen (Serum)','µg/dl'],['Transferrin','mg/dl'],
+ ['Transferrinsättigung','%'],['Löslicher Transferrinrezeptor','mg/l'],
+ ['Hämatokrit','%'],['Hämoglobin','g/dl'],
+ ['Glukose nüchtern','mg/dl'],['Insulin nüchtern','µU/ml'],['HOMA-Index',''],['HbA1c','%'],
+ ['ApoB','mg/dl'],['LDL','mg/dl'],['HDL','mg/dl'],['Triglyceride','mg/dl'],
+ ['Homocystein','µmol/l'],
+ ['GGT','U/l'],
+ ['Kreatinin','mg/dl'],['Cystatin C','mg/l'],
+ ['eGFR (Cystatin C)','ml/min'],['eGFR (Kreatinin)','ml/min'],
+ ['CK','U/l'],['CK-MB','U/l'],['NT-proBNP','pg/ml'],
+ ['Vitamin D (25-OH)','ng/ml'],['Vitamin A (Retinol)','µg/l'],['Kupfer','µg/dl']];
+function markerSync(){
+ if((num(S.settings.mkV)||0)>=MKV)return 0;
+ const old=S.settings.markers||[],by={};
+ old.forEach(m=>{by[m.n]=m});
+ const out=MKLIST.map(([n,u])=>{const o=by[n]||{};
+  const m={n:n,u:o.u||u};
+  if(o.lo!==undefined)m.lo=o.lo;
+  if(o.hi!==undefined)m.hi=o.hi;
+  return m});
+ const eigen=old.filter(m=>!MKLIST.some(x=>x[0]===m.n)&&!MKDROP.includes(m.n));
+ S.settings.markers=out.concat(eigen);
+ S.settings.mkV=MKV;
+ return 1;
+}
 /* Marker, die nach harten Einheiten regelmäßig erhöht sind */
-const REFTRAIN=['CK','GOT (AST)','GPT (ALT)','Kreatinin'];
+const REFTRAIN=['CK','CK-MB','Kreatinin','eGFR (Kreatinin)','GOT (AST)','GPT (ALT)'];
 function refFill(){
  let n=0;
  (S.settings.markers||[]).forEach(m=>{
@@ -1789,7 +1828,7 @@ render=function(){_render.apply(null,arguments);
 (async()=>{await DB.open();await loadHist();
  const st=await DB.get('state');S=st?migrate(st):fresh();
  if(!st&&typeof claude!=='undefined'&&claude.use)CLOUD='laden';
- try{if(refFill())DB.set('state',S)}catch(e){}
+ try{let ch=markerSync();if(refFill())ch=1;if(ch)DB.set('state',S)}catch(e){}
  await seedLocal(st);
  syncLater(st);
  phHydrate();
