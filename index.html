@@ -591,7 +591,7 @@ function hKoerper(){const F=S.settings.mfields,m=last(S.measures);if(!F.includes
   h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="mf">${F.map(f=>`<option ${f===ui.mf?'selected':''}>${esc(f)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.mf,empty:'Für einen Verlauf braucht es mindestens zwei Messungen.'})}</div></section>`}
  return h+entryList('measures','mdel')}
 function hBlut(){const MKs=S.settings.markers,b=last(S.blood),U={};MKs.forEach(m=>U[m.n]=m.u);
- let h=`<p class="mut">${b?`Letztes Blutbild am ${fD(b.date)}. ${dueText(b.date,S.settings.bloodEvery)}`:'Noch kein Blutbild eingetragen.'}</p>`+mbForm('blood','bform',MKs.map(m=>m.n),n=>U[n]||'','Neues Blutbild eintragen','Blutbild speichern');
+ let h=biBanner()+`<p class="mut">${b?`Letztes Blutbild am ${fD(b.date)}. ${dueText(b.date,S.settings.bloodEvery)}`:'Noch kein Blutbild eingetragen.'}</p>`+mbForm('blood','bform',MKs.map(m=>m.n),n=>U[n]||'','Neues Blutbild eintragen','Blutbild speichern');
  const withV=[...new Set(S.blood.flatMap(x=>Object.keys(x.vals)))];
  if(withV.length){if(!withV.includes(ui.bm))ui.bm=withV[0];const pts=S.blood.map(x=>[x.date,num(x.vals[ui.bm])]).filter(p=>p[1]!=null),yy=d=>fDs(d)+String(d).slice(2,4);
   h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="bm">${withV.map(n=>`<option ${n===ui.bm?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.bm,empty:'Für einen Verlauf braucht es mindestens zwei Werte.'})}</div></section>`;
@@ -1029,6 +1029,8 @@ document.addEventListener('click',e=>{
   if(!Object.keys(r).length)delete S.days[ui.date];
   save();return render();
  }
+ if(a==='biok')return biApply();
+ if(a==='bino'){BI=null;return render()}
  if(a==='puok')return puApply();
  if(a==='puno'){PU=null;return render()}
  if(a==='toimp')return go('mehr');
@@ -1550,6 +1552,42 @@ function stoolHist(){
   Einzelne Ausreißer bedeuten nichts, erst ein Muster über Wochen ist eine Aussage.</p></details>`;
 }
 
+/* ---------- Blutbild-Import ----------
+   Ein Befund kommt als Datei neben der App an und wird per Banner übernommen.
+   Ergänzt nur, was zum Datum noch nicht da ist. */
+let BI=null;
+async function bloodLoad(){
+ try{
+  const r=await fetch('data/blood-import.json',{cache:'no-cache'});
+  if(!r.ok)return;
+  const d=await r.json();
+  const off=(d&&d.entries||[]).filter(e=>!(S.blood||[]).some(x=>x.date===e.date));
+  if(!off.length)return;
+  BI=off;render();
+ }catch(e){}
+}
+function biBanner(){
+ if(!BI||!BI.length)return '';
+ const n=BI.reduce((a,e)=>a+Object.keys(e.vals||{}).length,0);
+ return `<div class="banner"><div><b>Blutbild vom ${fDs(BI[0].date)} liegt bereit</b>
+  <span>${n} Werte, bereits erfasste Befunde bleiben unberührt.</span></div>
+  <button data-pa="biok">Übernehmen</button>
+  <button class="ib sm" data-pa="bino" aria-label="Später">✕</button></div>`;
+}
+function biApply(){
+ if(!BI)return;
+ let n=0;
+ BI.forEach(e=>{
+  if((S.blood||[]).some(x=>x.date===e.date))return;
+  const o={date:e.date,vals:{}};
+  Object.entries(e.vals||{}).forEach(([k,v])=>{const x=num(v);if(x!=null){o.vals[k]=x;n++}});
+  if(e.note)o.note=e.note;
+  S.blood.push(o);
+ });
+ S.blood.sort((a,b)=>a.date.localeCompare(b.date));
+ BI=null;save();render();
+ toast(n+' Werte übernommen');
+}
 /* ---------- Planupdate ----------
    Neue Übungen kommen über eine mitgelieferte Datei dazu, nicht über einen Import.
    Ergänzt wird nur, was im Plan fehlt, bestehende Übungen und der Verlauf bleiben. */
@@ -1678,6 +1716,7 @@ const REF={
  'Kreatinin':[0.7,1.2],'Cystatin C':[null,0.85],
  'eGFR (Cystatin C)':[100,null],'eGFR (Kreatinin)':[90,null],
  'CK':[39,308],'hs-Troponin T':[null,6],'NT-proBNP':[null,50],
+ 'Gesamtcholesterin':[null,180],'Non-HDL':[null,110],'Freies Testosteron (Vermeulen)':[0.09,0.178],'Reverse T3':[0.08,0.23],'Erythrozyten':[4.1,5.7],'MCV':[81,99],'Leukozyten':[3.7,10.1],'Thrombozyten':[150,361],
  'Vitamin D (25-OH)':[40,60],'Vitamin A (Retinol)':[400,800],'Kupfer':[80,130]};
 /* Der Laborbereich daneben. Ausserhalb davon faerbt die App kraeftiger,
    weil das dann kein Zielwert mehr ist, sondern ein Befund. */
@@ -1695,20 +1734,21 @@ const REFLAB={
  'Kreatinin':[0.7,1.2],'Cystatin C':[0.5,0.96],
  'eGFR (Cystatin C)':[90,null],'eGFR (Kreatinin)':[90,null],
  'CK':[39,308],'hs-Troponin T':[null,14],'NT-proBNP':[null,125],
+ 'Gesamtcholesterin':[null,200],'Non-HDL':[null,145],'Freies Testosteron (Vermeulen)':[0.057,0.178],'Reverse T3':[0.08,0.23],'Erythrozyten':[4.1,5.7],'MCV':[81,99],'Leukozyten':[3.7,10.1],'Thrombozyten':[150,361],
  'Vitamin D (25-OH)':[30,70],'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140]};
 /* Panel-Umbau: vier raus, fünfzehn rein, nach Gruppen sortiert.
    Wird einmal angewandt, danach steht mkV und es passiert nichts mehr. */
-const MKV=4;
+const MKV=5;
 const MKDROP=['Cortisol morgens','Testosteron frei','GOT (AST)','GPT (ALT)','CK-MB'];
 const MKLIST=[
- ['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],
- ['Testosteron gesamt','ng/dl'],['SHBG','nmol/l'],['Albumin','g/dl'],['Estradiol','pg/ml'],
+ ['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['Reverse T3','ng/ml'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],
+ ['Testosteron gesamt','ng/dl'],['Freies Testosteron (Vermeulen)','µg/l'],['SHBG','nmol/l'],['Albumin','g/dl'],['Estradiol','pg/ml'],
  ['Progesteron','ng/ml'],['LH','U/l'],['FSH','U/l'],['Prolaktin','ng/ml'],['DHEA-S','µg/dl'],
  ['Ferritin','ng/ml'],['Eisen (Serum)','µg/dl'],['Transferrin','mg/dl'],
  ['Transferrinsättigung','%'],['Löslicher Transferrinrezeptor','mg/l'],
- ['Hämatokrit','%'],['Hämoglobin','g/dl'],
+ ['Hämatokrit','%'],['Hämoglobin','g/dl'],['Erythrozyten','/pl'],['MCV','fl'],['Leukozyten','/nl'],['Thrombozyten','/nl'],
  ['Glukose nüchtern','mg/dl'],['Insulin nüchtern','µU/ml'],['HOMA-Index',''],['HbA1c','%'],
- ['ApoB','mg/dl'],['LDL','mg/dl'],['HDL','mg/dl'],['Triglyceride','mg/dl'],
+ ['ApoB','mg/dl'],['Gesamtcholesterin','mg/dl'],['LDL','mg/dl'],['HDL','mg/dl'],['Non-HDL','mg/dl'],['Triglyceride','mg/dl'],
  ['Homocystein','µmol/l'],['hs-CRP','mg/l'],
  ['GGT','U/l'],
  ['Kreatinin','mg/dl'],['Cystatin C','mg/l'],
@@ -1857,11 +1897,12 @@ render=function(){_render.apply(null,arguments);
 (async()=>{await DB.open();await loadHist();
  const st=await DB.get('state');S=st?migrate(st):fresh();
  if(!st&&typeof claude!=='undefined'&&claude.use)CLOUD='laden';
- try{let ch=markerSync();if(refFill())ch=1;if(ch)DB.set('state',S)}catch(e){}
  await seedLocal(st);
+ try{let ch=markerSync();if(refFill())ch=1;if(ch)DB.set('state',S)}catch(e){}
  syncLater(st);
  phHydrate();
  planLoad();
+ bloodLoad();
 if(S.active)ui.tab='training';render();if(S.active)wake();
  try{if(navigator.storage&&navigator.storage.persisted)navigator.storage.persisted().then(p=>{if(!p&&navigator.storage.persist)navigator.storage.persist()})}catch(e){}
  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})})();
