@@ -311,6 +311,7 @@ nav.tabs button.on{color:var(--acc)}
 .t td.ref-ziel-hi{color:var(--yel)}
 .t td.ref-ziel-lo{color:var(--blue)}
 .t td.ref-hart-hi,.t td.ref-hart-lo{color:var(--red);font-weight:700}
+.t tr.tsep td{padding-top:18px;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.02em}
 
 </style>
 </head>
@@ -590,12 +591,12 @@ function hKoerper(){const F=S.settings.mfields,m=last(S.measures);if(!F.includes
  if(S.measures.length){const pts=S.measures.map(x=>[x.date,num(x.vals[ui.mf])]).filter(p=>p[1]!=null);
   h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="mf">${F.map(f=>`<option ${f===ui.mf?'selected':''}>${esc(f)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.mf,empty:'Für einen Verlauf braucht es mindestens zwei Messungen.'})}</div></section>`}
  return h+entryList('measures','mdel')}
-function hBlut(){const MKs=S.settings.markers,b=last(S.blood),U={};MKs.forEach(m=>U[m.n]=m.u);
+function hBlut(){const MKs=S.settings.markers,b=last(S.blood),U={};MKARCH.forEach(([n,u])=>U[n]=u);MKs.forEach(m=>U[m.n]=m.u);
  let h=biBanner()+`<p class="mut">${b?`Letztes Blutbild am ${fD(b.date)}. ${dueText(b.date,S.settings.bloodEvery)}`:'Noch kein Blutbild eingetragen.'}</p>`+mbForm('blood','bform',MKs.map(m=>m.n),n=>U[n]||'','Neues Blutbild eintragen','Blutbild speichern');
- const withV=[...new Set(S.blood.flatMap(x=>Object.keys(x.vals)))];
- if(withV.length){if(!withV.includes(ui.bm))ui.bm=withV[0];const pts=S.blood.map(x=>[x.date,num(x.vals[ui.bm])]).filter(p=>p[1]!=null),yy=d=>fDs(d)+String(d).slice(2,4);
-  h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="bm">${withV.map(n=>`<option ${n===ui.bm?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.bm,empty:'Für einen Verlauf braucht es mindestens zwei Werte.'})}</div></section>`;
-  const lw=n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null);return v.length?num(last(v).vals[n]):null};const hart=withV.filter(n=>REFHART(refState(n,lw(n))));const weich=withV.filter(n=>['ziel-lo','ziel-hi'].includes(refState(n,lw(n))));h+=`<section class="sec"><h3>Letzte Werte</h3>${hart.length?`<p class="hint" style="margin-top:0;color:var(--red)">Außerhalb des Laborbereichs: ${esc(hart.join(', '))}.</p>`:''}${weich.length?`<p class="hint" style="margin-top:0">Im Laborbereich, aber außerhalb deines Zielbereichs: ${esc(weich.join(', '))}.</p>`:''}${hart.concat(weich).some(n=>REFTRAIN.includes(n))?`<p class="hint" style="margin-top:0">CK, hs-CRP, Kreatinin und die daraus gerechnete eGFR sind nach harten Einheiten regelmäßig verschoben, ohne dass etwas vorliegt. Für eine brauchbare Abnahme mindestens 48 Stunden Abstand zum Training.</p>`:''}<div class="card"><table class="t"><thead><tr><th>Marker</th><th>Aktuell</th><th>Vorher</th></tr></thead><tbody>${withV.map(n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null),a=last(v),p=v[v.length-2];const mk=MKs.find(x=>x.n===n)||{},rs=refState(n,num(a.vals[n]));return `<tr><td>${esc(n)}<small>${esc(U[n]||'')}${refTxt(mk)?' \u00b7 '+esc(refTxt(mk)):''}</small></td><td class="ref-${rs}">${dv(a.vals[n])} ${REFMARK[rs]||''}<small>${yy(a.date)}</small></td><td class="ref-${refState(n,p?num(p.vals[n]):null)}">${p?`${dv(p.vals[n])}<small>${yy(p.date)}</small>`:'–'}</td></tr>`}).join('')}</tbody></table></div></section>`}
+ const withV=wOrd([...new Set(S.blood.flatMap(x=>Object.keys(x.vals)))],MKs);
+ if(withV.length){if(!withV.includes(ui.bm))ui.bm=withV[0];const ptsA=S.blood.map(x=>[x.date,num(x.vals[ui.bm])]).filter(p=>p[1]!=null),bzc=ui.bz==='alle'?'0000':addDays(todayStr(),-730),pts=ptsA.filter(p=>p[0]>=bzc),yy=d=>fDs(d)+String(d).slice(2,4);
+  h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="bm">${withV.map(n=>`<option ${n===ui.bm?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="seg sm mt8"><button class="${ui.bz!=='alle'?'on':''}" data-a="seg" data-k="bz" data-v="2J">2 Jahre</button><button class="${ui.bz==='alle'?'on':''}" data-a="seg" data-k="bz" data-v="alle">Alles</button></div><div class="card">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{bands:phaseBands(),label:ui.bm,empty:(ui.bz!=='alle'&&ptsA.length>1)?'In den letzten zwei Jahren gibt es dafür weniger als zwei Werte. Unter „Alles“ siehst du die älteren.':'Für einen Verlauf braucht es mindestens zwei Werte.'})}${pts.length>1&&S.phases.length?`<div class="legend">${[...new Set(S.phases.map(p=>p.type))].map(t=>`<span>${dot(PHC[t])}${t}</span>`).join('')}</div>`:''}</div></section>`;
+  const lw=n=>b&&b.vals[n]!=null?num(b.vals[n]):null,wSep=withV.find(n=>!MKs.some(m=>m.n===n));const hart=withV.filter(n=>REFHART(refState(n,lw(n))));const weich=withV.filter(n=>['ziel-lo','ziel-hi'].includes(refState(n,lw(n))));h+=`<section class="sec"><h3>Letzte Werte</h3>${hart.length?`<p class="hint" style="margin-top:0;color:var(--red)">Im letzten Befund außerhalb des Laborbereichs: ${esc(hart.join(', '))}.</p>`:''}${weich.length?`<p class="hint" style="margin-top:0">Im letzten Befund im Laborbereich, aber außerhalb deines Zielbereichs: ${esc(weich.join(', '))}.</p>`:''}${hart.concat(weich).some(n=>REFTRAIN.includes(n))?`<p class="hint" style="margin-top:0">CK, hs-CRP, Kreatinin und die daraus gerechnete eGFR sind nach harten Einheiten regelmäßig verschoben, ohne dass etwas vorliegt. Für eine brauchbare Abnahme mindestens 48 Stunden Abstand zum Training.</p>`:''}<div class="card"><table class="t"><thead><tr><th>Marker</th><th>Aktuell</th><th>Vorher</th></tr></thead><tbody>${withV.map(n=>{const v=S.blood.filter(x=>num(x.vals[n])!=null),a=last(v),p=v[v.length-2];const mk=MKs.find(x=>x.n===n)||(REFLAB[n]?{lo:REFLAB[n][0],hi:REFLAB[n][1]}:{}),rs=refState(n,num(a.vals[n]));return (n===wSep?'<tr class="tsep"><td colspan="3">Weitere Werte aus älteren Befunden, nicht im Eingabeformular</td></tr>':'')+`<tr><td>${esc(n)}<small>${esc(U[n]||'')}${refTxt(mk)?' \u00b7 '+esc(refTxt(mk)):''}</small></td><td class="ref-${rs}">${dv(a.vals[n])} ${REFMARK[rs]||''}<small>${yy(a.date)}</small></td><td class="ref-${refState(n,p?num(p.vals[n]):null)}">${p?`${dv(p.vals[n])}<small>${yy(p.date)}</small>`:'–'}</td></tr>`}).join('')}</tbody></table></div></section>`}
  return h+entryList('blood','bdel')}
 function hVert(){const f=ui.tform;
  let h=`<div class="card"><label class="lbl">Lebensmittel oder Supplement<input class="txt" data-form="tform.name" value="${esc(f.name)}" placeholder="z. B. Laktose, Zwiebeln, Ashwagandha"></label><div class="chips mt8">${RORD.map(r=>`<button class="chip ${f.rate===r?'on':''}" data-a="tolpick" data-v="${r}">${dot(RATE[r])}${r}</button>`).join('')}</div><label class="lbl mt8">Notiz<input class="txt" data-form="tform.note" value="${esc(f.note)}" placeholder="Was passiert, bei welcher Menge?"></label><button class="primary" data-a="toladd">Eintragen</button></div>`;
@@ -1568,9 +1569,11 @@ async function bloodLoad(){
 }
 function biBanner(){
  if(!BI||!BI.length)return '';
- const n=BI.reduce((a,e)=>a+Object.keys(e.vals||{}).length,0);
- return `<div class="banner"><div><b>Blutbild vom ${fDs(BI[0].date)} liegt bereit</b>
-  <span>${n} Werte, bereits erfasste Befunde bleiben unberührt.</span></div>
+ const n=BI.reduce((a,e)=>a+Object.keys(e.vals||{}).length,0),k=BI.length;
+ const kopf=k>1?`${k} Befunde liegen bereit`:`Blutbild vom ${fD(BI[0].date)} liegt bereit`;
+ const zeit=k>1?` vom ${fD(BI[0].date)} bis ${fD(last(BI).date)}`:'';
+ return `<div class="banner"><div><b>${kopf}</b>
+  <span>${n} Werte${zeit}. Bereits erfasste Befunde bleiben unberührt.</span></div>
   <button data-pa="biok">Übernehmen</button>
   <button class="ib sm" data-pa="bino" aria-label="Später">✕</button></div>`;
 }
@@ -1585,8 +1588,8 @@ function biApply(){
   S.blood.push(o);
  });
  S.blood.sort((a,b)=>a.date.localeCompare(b.date));
- BI=null;save();render();
- toast(n+' Werte übernommen');
+ const k=BI.length;BI=null;save();render();
+ toast(k>1?(k+' Befunde mit '+n+' Werten übernommen'):(n+' Werte übernommen'));
 }
 /* ---------- Planupdate ----------
    Neue Übungen kommen über eine mitgelieferte Datei dazu, nicht über einen Import.
@@ -1717,7 +1720,7 @@ const REF={
  'eGFR (Cystatin C)':[100,null],'eGFR (Kreatinin)':[90,null],
  'CK':[39,308],'hs-Troponin T':[null,6],'NT-proBNP':[null,50],
  'Gesamtcholesterin':[null,180],'Non-HDL':[null,110],'Freies Testosteron (Vermeulen)':[0.09,0.178],'Reverse T3':[0.08,0.23],'Erythrozyten':[4.1,5.7],'MCV':[81,99],'Leukozyten':[3.7,10.1],'Thrombozyten':[150,361],
- 'Vitamin D (25-OH)':[40,60],'Vitamin A (Retinol)':[400,800],'Kupfer':[80,130]};
+ 'Vitamin D (25-OH)':[40,60],'Calcium':[2.2,2.5],'Vitamin A (Retinol)':[400,800],'Kupfer':[80,130]};
 /* Der Laborbereich daneben. Ausserhalb davon faerbt die App kraeftiger,
    weil das dann kein Zielwert mehr ist, sondern ein Befund. */
 const REFLAB={
@@ -1735,10 +1738,30 @@ const REFLAB={
  'eGFR (Cystatin C)':[90,null],'eGFR (Kreatinin)':[90,null],
  'CK':[39,308],'hs-Troponin T':[null,14],'NT-proBNP':[null,125],
  'Gesamtcholesterin':[null,200],'Non-HDL':[null,145],'Freies Testosteron (Vermeulen)':[0.057,0.178],'Reverse T3':[0.08,0.23],'Erythrozyten':[4.1,5.7],'MCV':[81,99],'Leukozyten':[3.7,10.1],'Thrombozyten':[150,361],
- 'Vitamin D (25-OH)':[30,70],'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140]};
+ 'Vitamin D (25-OH)':[30,70],'Calcium':[2.1,2.6],'Vitamin A (Retinol)':[300,900],'Kupfer':[70,140],
+ 'GOT (AST)':[null,50],'GPT (ALT)':[null,50],'Alkalische Phosphatase':[40,129],'Bilirubin':[null,1.1],
+ 'LDH':[135,250],'Natrium':[135,145],'Kalium':[3.5,5.1],'Magnesium':[0.7,1.05],
+ 'Harnstoff':[17,43],'Harnsäure':[3.4,7],'Gesamteiweiß':[6.4,8.3],
+ 'Vitamin B12':[191,663],'Folsäure':[4.6,18.7],'BSG':[null,10],'CRP':[null,5],
+ 'Retikulozyten':[5,16],'MCH':[27,34],'MCHC':[32,36],
+ 'Neutrophile':[42,76],'Lymphozyten':[18,45],'Monozyten':[3,10],'Eosinophile':[1,7],'Basophile':[null,2],
+ 'Freier Androgen-Index':[35,93],'Freies Testosteron (ELISA)':[7,22.7],'DHT':[26.7,69.5]};
+/* Marker, die nur in älteren Befunden vorkommen. Sie stehen nicht im Eingabeformular,
+   bekommen aber Einheit und Laborbereich, damit Tabelle und Verlauf sie richtig zeigen. */
+const MKARCH=[['GOT (AST)','U/l'],['GPT (ALT)','U/l'],['Alkalische Phosphatase','U/l'],['Bilirubin','mg/dl'],
+ ['LDH','U/l'],['Natrium','mmol/l'],['Kalium','mmol/l'],['Magnesium','mmol/l'],
+ ['Harnstoff','mg/dl'],['Harnsäure','mg/dl'],['Gesamteiweiß','g/dl'],
+ ['Vitamin B12','pg/ml'],['Folsäure','ng/ml'],['BSG','mm/h'],['CRP','mg/l'],
+ ['Retikulozyten','‰'],['MCH','pg'],['MCHC','g/dl'],
+ ['Neutrophile','%'],['Lymphozyten','%'],['Monozyten','%'],['Eosinophile','%'],['Basophile','%'],
+ ['Freier Androgen-Index',''],['Freies Testosteron (ELISA)','pg/ml'],['DHT','ng/dl']];
+/* Reihenfolge für Tabelle und Auswahl: erst dein Panel, dann die Archivmarker */
+function wOrd(a,MKs){const o=MKs.map(m=>m.n).concat(MKARCH.map(x=>x[0]));
+ const ix=n=>{const i=o.indexOf(n);return i<0?999:i};
+ return a.slice().sort((x,y)=>ix(x)-ix(y)||x.localeCompare(y,'de'))}
 /* Panel-Umbau: vier raus, fünfzehn rein, nach Gruppen sortiert.
    Wird einmal angewandt, danach steht mkV und es passiert nichts mehr. */
-const MKV=5;
+const MKV=6;
 const MKDROP=['Cortisol morgens','Testosteron frei','GOT (AST)','GPT (ALT)','CK-MB'];
 const MKLIST=[
  ['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['Reverse T3','ng/ml'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],
@@ -1754,7 +1777,7 @@ const MKLIST=[
  ['Kreatinin','mg/dl'],['Cystatin C','mg/l'],
  ['eGFR (Cystatin C)','ml/min'],['eGFR (Kreatinin)','ml/min'],
  ['CK','U/l'],['hs-Troponin T','ng/l'],['NT-proBNP','pg/ml'],
- ['Vitamin D (25-OH)','ng/ml'],['Vitamin A (Retinol)','µg/l'],['Kupfer','µg/dl']];
+ ['Vitamin D (25-OH)','ng/ml'],['Calcium','mmol/l'],['Vitamin A (Retinol)','µg/l'],['Kupfer','µg/dl']];
 function markerSync(){
  if((num(S.settings.mkV)||0)>=MKV)return 0;
  const old=S.settings.markers||[],by={};
@@ -1793,16 +1816,15 @@ function refTxt(m){
  return dv(m.lo)+' bis '+dv(m.hi);
 }
 function refState(name,v){
- const m=(S.settings.markers||[]).find(x=>x.n===name);
- if(!m||v==null)return '';
+ const m=(S.settings.markers||[]).find(x=>x.n===name)||{};
  const L=REFLAB[name];
+ if(v==null||(!L&&m.lo==null&&m.hi==null))return '';
  if(L){
   if(L[0]!=null&&v<L[0])return 'hart-lo';
   if(L[1]!=null&&v>L[1])return 'hart-hi';
  }
  if(m.lo!=null&&v<m.lo)return 'ziel-lo';
  if(m.hi!=null&&v>m.hi)return 'ziel-hi';
- if(m.lo==null&&m.hi==null)return '';
  return 'in';
 }
 const REFMARK={'hart-lo':'\u25bc\u25bc','hart-hi':'\u25b2\u25b2',
