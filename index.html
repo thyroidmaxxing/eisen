@@ -407,9 +407,9 @@ function rolling(pts,win=7){const out=[];let j=0;for(let i=0;i<pts.length;i++){w
 /* Zyklus und Progression */
 function weekMode(c){if(c.deload&&c.week>=c.len)return 'deload';if(c.intro&&c.week===1)return 'intro';return 'normal'}
 const MODE={normal:'Normal',intro:'Intro-Woche',deload:'Deload'};
-const MODETXT={normal:'Normale Woche. RIR-Ziele wie im Plan.',intro:'Intro-Woche. Alle RIR-Ziele +1, damit du reinkommst.',deload:'Deload. Halbe Sätze, RIR 3-4, Gewicht halten.'};
-function rirShow(r,mode){if(mode==='deload')return '3-4';if(mode==='intro')return String(r).split('-').map(x=>(parseFloat(x)||0)+1).join('-');return String(r)}
-function setsFor(e,mode){return mode==='deload'?e.sets.slice(0,Math.max(1,Math.ceil(e.sets.length/2))):e.sets}
+const MODETXT={normal:'Normale Woche. RIR-Ziele wie im Plan.',intro:'Intro-Woche. Alle RIR-Ziele +1, damit du reinkommst.',deload:'Deload. Halbes Volumen, Gewicht wie zuletzt, RIR 1-2.'};
+function rirShow(r,mode){if(mode==='deload'){const a=String(r).split('-').map(x=>parseFloat(x)).filter(x=>!isNaN(x));return a.length&&Math.min(...a)>=1&&Math.max(...a)>=2?String(r):'1-2'}if(mode==='intro')return String(r).split('-').map(x=>(parseFloat(x)||0)+1).join('-');return String(r)}
+function setsFor(e,mode){if(mode!=='deload')return e.sets;const n=e.sets.length,day=((S.plan&&S.plan.days)||[]).find(d=>(d.ex||[]).includes(e));let k=Math.ceil(n/2);if(day&&n%2){const vor=day.ex.slice(0,day.ex.indexOf(e)).filter(x=>x.sets.length%2).length;k=vor%2?Math.floor(n/2):Math.ceil(n/2)}return e.sets.slice(0,Math.max(1,k))}
 function dayColor(n){const i=S.plan.days.findIndex(d=>d.name===n);return i<0?C.mut:PLATE[i%PLATE.length]}
 const inkOn=c=>(c===C.yel||c===C.chalk)?C.bg:C.chalk;
 function planEx(name){for(const d of S.plan.days)for(const e of d.ex)if(e.name===name)return e;return null}
