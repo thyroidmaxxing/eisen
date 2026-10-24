@@ -450,7 +450,7 @@ function vHeute(){const d=ui.date,r=S.days[d]||{},L=S.settings.labels,units=S.pl
  h+=`<div class="daynav"><button class="ib" data-a="dprev" aria-label="Vortag">‹</button><button class="dn-date" data-a="dtoday"><b>${d===todayStr()?'Heute':WDL[pd(d).getDay()]}</b><span>${fD(d)}</span></button><button class="ib" data-a="dnext" aria-label="Nächster Tag">›</button></div>`;
  h+=`<div class="trend" id="trend">${trendHtml(d)}</div>`;
  h+=`<section class="sec"><h3>Gewicht und Ernährung</h3><div class="grid2">${fld(r,'w','Gewicht','kg')}${fld(r,'kcal','Kalorien','kcal','numeric')}</div><div class="grid3 mt8">${fld(r,'p','Protein','g','numeric')}${fld(r,'c','Carbs','g','numeric')}${fld(r,'f','Fett','g','numeric')}</div><p class="hint" id="chk">${checks(d,r)}</p></section>`;
- h+=`<section class="sec"><h3>Temperatur und Puls</h3><div class="grid2">${fld(r,'t1',L[0],'°C')}${fld(r,'hr1',L[2],'bpm','numeric')}</div><details class="card mt8"${(r.t2!=null||r.hr2!=null)?' open':''}><summary>Nachmittags</summary><div class="grid2">${fld(r,'t2',L[1],'°C')}${fld(r,'hr2',L[3],'bpm','numeric')}</div></details></section>`;
+ h+=`<section class="sec"><h3>Temperatur, Puls und Blutdruck</h3><div class="grid2">${fld(r,'t1',L[0],'°C')}${fld(r,'hr1',L[2],'bpm','numeric')}</div><div class="grid2 mt8">${fld(r,'bps1','Blutdruck sys.','mmHg','numeric')}${fld(r,'bpd1','Blutdruck dia.','mmHg','numeric')}</div><details class="card mt8"${(r.t2!=null||r.hr2!=null||r.bps2!=null||r.bpd2!=null)?' open':''}><summary>Nachmittags</summary><div class="grid2">${fld(r,'t2',L[1],'°C')}${fld(r,'hr2',L[3],'bpm','numeric')}</div><div class="grid2 mt8">${fld(r,'bps2','Blutdruck sys.','mmHg','numeric')}${fld(r,'bpd2','Blutdruck dia.','mmHg','numeric')}</div></details></section>`;
  h+=`<section class="sec"><h3>Aktivität und Schlaf</h3><div class="grid3">${fld(r,'cardio','Cardio','min','numeric')}${fld(r,'steps','Schritte','','numeric')}${fld(r,'sleep','Schlaf','h')}</div></section>`;
  h+=`<section class="sec"><h3>Training und Verdauung</h3><div class="card list">
   <div class="srow"><span>Einheit</span><select class="txt w-auto" data-f="unit"><option value="">Keine</option>${units.map(u=>`<option ${r.unit===u?'selected':''}>${esc(u)}</option>`).join('')}${r.unit&&!units.includes(r.unit)?`<option selected>${esc(r.unit)}</option>`:''}</select></div>
@@ -562,8 +562,8 @@ function pKraft(){const cnt={};S.sessions.forEach(s=>s.ex.forEach(e=>{cnt[e.name
  const gset=[...new Set(rows.map(r=>r.g))];const gser=gset.map((g,i)=>({g,pts:rows.filter(r=>!r.dl&&r.g===g).map(r=>[r.d,rnd(r.v)]),color:i===gset.length-1?C.chalk:[C.blue,C.yel,C.grn][i%3]}));const pts=rows.filter(r=>!r.dl).map(r=>[r.d,rnd(r.v)]),top=rows.reduce((m,r)=>!m||r.v>m.v?r:m,null);
  return `<select class="txt" data-sel="ex">${names.map(n=>`<option ${n===ui.ex?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8"><div class="kv"><div><small>Bestwert, geschätztes 1RM</small><b>${top?fmt(top.v,1)+' kg':'–'}</b></div><div><small>Datum</small><b>${top?fD(top.d):'–'}</b></div></div>${chartSVG(gser.map(x=>({pts:x.pts,color:x.color,dots:true,r:2.6,op:.9,w:2})),{label:'Kraftverlauf'})}${gset.length>1?`<div class="legend">${gser.map(x=>`<span>${dot(x.color)}${esc(x.g||'ohne Version')}</span>`).join('')}</div><p class="hint">Getrennte Linien, weil das Gerät gewechselt hat. Die Lasten sind nicht vergleichbar.</p>`:''}</div>
  <section class="sec"><h3>Bester Satz pro Einheit</h3><div class="card list">${rows.slice(-12).reverse().map(r=>`<div class="row"><span class="grow"><b>${dv(r.t.w)} kg × ${r.t.r}${r.t.rir!=null?` @${r.t.rir}`:''}</b><small>${fD(r.d)}${r.dl?', Deload':''}</small></span><span class="mut">${fmt(r.v,1)}</span></div>`).join('')}</div></section>`}
-function metrics(){const L=S.settings.labels;return [['w','Gewicht','kg',1],['kcal','Kalorien','kcal',0],['p','Protein','g',0],['c','Carbs','g',0],['f','Fett','g',0],['t1',L[0],'°C',2],['t2',L[1],'°C',2],['hr1',L[2],'bpm',0],['hr2',L[3],'bpm',0],['cardio','Cardio','min',0],['steps','Schritte','',0],['sleep','Schlaf','h',1],['stool','Stuhlgang','pro Tag',1]]}
-function pTag(){const M=metrics(),m=M.find(x=>x[0]===ui.metric)||M[5],all=series(m[0]),ro=rolling(all),c=cutoff(),a=n=>avg(rng(todayStr(),0,n-1,m[0]));
+function metrics(){const L=S.settings.labels;return [['w','Gewicht','kg',1],['kcal','Kalorien','kcal',0],['p','Protein','g',0],['c','Carbs','g',0],['f','Fett','g',0],['t1',L[0],'°C',2],['t2',L[1],'°C',2],['hr1',L[2],'bpm',0],['hr2',L[3],'bpm',0],['bps1','Blutdruck sys. morgens','mmHg',0],['bpd1','Blutdruck dia. morgens','mmHg',0],['bps2','Blutdruck sys. nachmittags','mmHg',0],['bpd2','Blutdruck dia. nachmittags','mmHg',0],['cardio','Cardio','min',0],['steps','Schritte','',0],['sleep','Schlaf','h',1],['stool','Stuhlgang','pro Tag',1]]}
+function pTag(){const M=tagMetrics(),m=M.find(x=>x[0]===ui.metric)||M[5];if(m[0]==='bp1'||m[0]==='bp2')return pBP(M,m);const all=series(m[0]),ro=rolling(all),c=cutoff(),a=n=>avg(rng(todayStr(),0,n-1,m[0]));
  return `<select class="txt" data-sel="metric">${M.map(x=>`<option value="${x[0]}" ${x[0]===m[0]?'selected':''}>${esc(x[1])}</option>`).join('')}</select><div class="mt8">${ranges()}</div><div class="card"><div class="kv"><div><small>Ø 7 Tage</small><b>${fmt(a(7),m[3])}</b></div><div><small>Ø 30 Tage</small><b>${fmt(a(30),m[3])}</b></div><div><small>Ø 90 Tage</small><b>${fmt(a(90),m[3])}</b></div></div>${chartSVG([{pts:all.filter(p=>p[0]>=c),color:C.mut,dots:true,line:false},{pts:ro.filter(p=>p[0]>=c),color:C.chalk,w:2.2}],{label:m[1]})}<p class="hint">Punkte sind Tageswerte, die Linie ist der 7-Tage-Schnitt${m[2]?`, Einheit ${m[2]}`:''}.</p></div>`}
 function perfIndex(){const res={},ss=S.sessions,best=e=>Math.max(0,...e.sets.map(t=>e1rm(t.w,t.r)||0));
  ss.forEach((s,i)=>{if(s.mode==='deload')return;const ratios=[];s.ex.forEach(e=>{const b=best(e);if(!b)return;const prev=[];for(let j=i-1;j>=0&&prev.length<4;j--){if(ss[j].mode==='deload')continue;const pe=ss[j].ex.find(x=>x.name===e.name);if(!pe)continue;const pb=best(pe);if(pb)prev.push(pb)}if(prev.length>=2)ratios.push(b/avg(prev))});
@@ -1700,6 +1700,47 @@ function readyCard(d){
   ${open?`<div class="rlist">${R.items.map(x=>`<div class="ri ${x.s}">${dot(RDOT[x.s])}
    <span class="grow"><b>${esc(x.l)}</b><small>${esc(x.v)}${x.b?' · '+esc(x.b):''}</small>
    <em>${esc(x.t)}</em></span></div>`).join('')}</div>`:''}</div>`;
+}
+
+/* ---------- Blutdruck ----------
+   Eingabe wie beim Puls: morgens offen im Tageslog, nachmittags in der Klappe.
+   In den Tageswerten laufen systolisch und diastolisch in einem Diagramm.
+   Einordnung nach ESC 2024 für Heimmessung, Schnitt über 7 Tage. */
+function tagMetrics(){
+ const out=[];
+ metrics().forEach(x=>{
+  if(x[0]==='bps1')out.push(['bp1','Blutdruck morgens','mmHg',0]);
+  else if(x[0]==='bps2')out.push(['bp2','Blutdruck nachmittags','mmHg',0]);
+  else if(x[0]!=='bpd1'&&x[0]!=='bpd2')out.push(x);
+ });
+ return out;
+}
+function bpClass(s,d){
+ if(s==null||d==null)return null;
+ if(s>=135||d>=85)return {s:'stop',t:'im Bereich Bluthochdruck für Heimmessung, ab 135/85.'};
+ if(s>=120||d>=70)return {s:'achtung',t:'erhöht nach ESC 2024, also zwischen 120/70 und 135/85. Das ist noch kein Bluthochdruck.'};
+ return {s:'gut',t:'nicht erhöht, unter 120/70.'};
+}
+function pBP(M,m){
+ const k=m[0]==='bp1'?'1':'2',sF='bps'+k,dF='bpd'+k,c=cutoff();
+ const sA=series(sF),dA=series(dF);
+ const a=(f,n)=>avg(rng(todayStr(),0,n-1,f));
+ const pair=n=>{const x=a(sF,n),y=a(dF,n);return x!=null&&y!=null?Math.round(x)+'/'+Math.round(y):'–'};
+ const n7=rng(todayStr(),0,6,sF).length,cl=n7>=3?bpClass(a(sF,7),a(dF,7)):null;
+ return `<select class="txt" data-sel="metric">${M.map(x=>`<option value="${x[0]}" ${x[0]===m[0]?'selected':''}>${esc(x[1])}</option>`).join('')}</select>
+  <div class="mt8">${ranges()}</div><div class="card"><div class="kv">
+  <div><small>Ø 7 Tage</small><b>${pair(7)}</b></div><div><small>Ø 30 Tage</small><b>${pair(30)}</b></div>
+  <div><small>Ø 90 Tage</small><b>${pair(90)}</b></div></div>
+  ${chartSVG([{pts:sA.filter(p=>p[0]>=c),color:C.chalk,dots:true,line:false,op:.4},
+   {pts:rolling(sA).filter(p=>p[0]>=c),color:C.chalk,w:2.2},
+   {pts:dA.filter(p=>p[0]>=c),color:C.blue,dots:true,line:false,op:.4},
+   {pts:rolling(dA).filter(p=>p[0]>=c),color:C.blue,w:2.2}],
+   {label:m[1],empty:'Für einen Verlauf braucht es mindestens zwei Messungen.'})}
+  <div class="legend"><span>${dot(C.chalk)}systolisch</span><span>${dot(C.blue)}diastolisch</span></div>
+  ${cl?`<p class="hint">${dot(RDOT[cl.s])} Dein Schnitt der letzten 7 Tage ist ${esc(cl.t)}</p>`
+   :'<p class="hint">Für eine Einordnung braucht es Messungen an mindestens drei der letzten sieben Tage.</p>'}
+  <p class="hint">Vergleichbar wird es so: sitzend nach fünf Minuten Ruhe, Arm auf Herzhöhe, vor Kaffee und Training.
+  Zweimal im Abstand von einer Minute messen und den Schnitt eintragen. Punkte sind Tageswerte, die Linien der 7-Tage-Schnitt.</p></div>`;
 }
 
 /* ---------- Referenzbereiche ----------
