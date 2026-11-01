@@ -412,14 +412,14 @@ function rirShow(r,mode){if(mode==='deload'){const a=String(r).split('-').map(x=
 function setsFor(e,mode){if(mode!=='deload')return e.sets;const n=e.sets.length,day=((S.plan&&S.plan.days)||[]).find(d=>(d.ex||[]).includes(e));let k=Math.ceil(n/2);if(day&&n%2){const vor=day.ex.slice(0,day.ex.indexOf(e)).filter(x=>x.sets.length%2).length;k=vor%2?Math.floor(n/2):Math.ceil(n/2)}return e.sets.slice(0,Math.max(1,k))}
 function dayColor(n){const i=S.plan.days.findIndex(d=>d.name===n);return i<0?C.mut:PLATE[i%PLATE.length]}
 const inkOn=c=>(c===C.yel||c===C.chalk)?C.bg:C.chalk;
-function planEx(name){for(const d of S.plan.days)for(const e of d.ex)if(e.name===name)return e;return null}
+function planExIn(day,name){const d=S.plan.days.find(x=>x.name===day);return d&&d.ex.find(e=>e.name===name)||null}function planEx(name,day){if(day){const e=planExIn(day,name);if(e)return e}for(const d of S.plan.days)for(const e of d.ex)if(e.name===name)return e;return null}
 function lastPerf(name,day,gear){const g=gear||'';let any=null;for(let i=S.sessions.length-1;i>=0;i--){const s=S.sessions[i];if(s.mode==='deload')continue;const e=s.ex.find(x=>x.name===name&&x.sets.length&&(x.gear||'')===g);if(!e)continue;if(s.day===day)return {s,e};if(!any)any={s,e}}return any}
 function suggest(spec,ps,inc,prog){if(!ps||num(ps.w)==null)return null;const w=num(ps.w),r=num(ps.r),rir=num(ps.rir),rmin=parseFloat(spec.rir)||0;if(r!=null&&r>=spec.max&&(rir==null||rir>=rmin))return {w:rnd(w+inc),up:true};if(prog!=='reps'&&r!=null&&r<spec.min){const t=corrLoad(w,r,spec,inc);if(t&&t<w)return {w:t,low:true}}return {w,up:false,low:r!=null&&r<spec.min}}
 function sugFor(mode,spec,ps,inc,prog){return mode==='deload'?(ps&&num(ps.w)!=null?{w:num(ps.w)}:null):suggest(spec,ps,inc,prog)}
 function mkEx(e,day,mode){const specs=setsFor(e,mode),lp=lastPerf(e.name,day,e.gear),inc=num(e.inc)??num(S.settings.inc)??2.5;
  return {name:e.name,muscle:e.muscle||'',setup:e.setup||'',rest:e.rest||90,inc,prog:e.prog||'',gear:e.gear||'',specs:specs.map(s=>({min:s.min,max:s.max,rir:rirShow(s.rir,mode),base:s.rir})),last:lp?{date:lp.s.date,sets:lp.e.sets}:null,
   sets:specs.map((s,i)=>{const ps=lp?(lp.e.sets[i]||last(lp.e.sets)):null;const g=sugFor(mode,s,ps,inc,e.prog);return {w:g?dv(g.w):'',r:'',rir:'',done:false,up:!!(g&&g.up),low:!!(g&&g.low)}})}}
-function swapEx(ei,name){const a=S.active,e=a.ex[ei],pe=planEx(name);e.name=name;e.setup=pe?pe.setup||'':'';e.prog=pe?pe.prog||'':'';e.gear=pe?pe.gear||'':'';e.inc=pe&&num(pe.inc)!=null?num(pe.inc):e.inc;if(pe&&pe.muscle)e.muscle=pe.muscle;const lp=lastPerf(name,a.day,pe&&pe.gear);e.last=lp?{date:lp.s.date,sets:lp.e.sets}:null;
+function swapEx(ei,name){const a=S.active,e=a.ex[ei],pe=planEx(name,a.day);e.name=name;e.setup=pe?pe.setup||'':'';e.prog=pe?pe.prog||'':'';e.gear=pe?pe.gear||'':'';e.inc=pe&&num(pe.inc)!=null?num(pe.inc):e.inc;if(pe&&pe.muscle)e.muscle=pe.muscle;const lp=lastPerf(name,a.day,pe&&pe.gear);e.last=lp?{date:lp.s.date,sets:lp.e.sets}:null;
  e.sets.forEach((s,i)=>{if(s.done)return;const sp=e.specs[i]||last(e.specs);const ps=lp?(lp.e.sets[i]||last(lp.e.sets)):null;const g=sugFor(a.mode,{min:sp.min,max:sp.max,rir:sp.base??sp.rir},ps,e.inc,e.prog);s.w=g?dv(g.w):'';s.up=!!(g&&g.up);s.low=!!(g&&g.low)})}
 function nextDay(){const rot=S.plan.rotation.filter(x=>x!=='Off'&&S.plan.days.some(d=>d.name===x));if(!rot.length)return S.plan.days[0]?S.plan.days[0].name:null;let ls=null;for(let i=S.sessions.length-1;i>=0;i--)if(rot.includes(S.sessions[i].day)){ls=S.sessions[i];break}if(!ls)return rot[0];return rot[(rot.indexOf(ls.day)+1)%rot.length]}
 function lastSessOf(n){for(let i=S.sessions.length-1;i>=0;i--)if(S.sessions[i].day===n)return S.sessions[i];return null}
@@ -686,7 +686,7 @@ function merge(src){
  const ss=src.settings||{};['supps','tags','pre','mfields'].forEach(k=>(ss[k]||[]).forEach(v=>{if(!S.settings[k].includes(v))S.settings[k].push(v)}));
  (ss.markers||[]).forEach(m=>{if(!S.settings.markers.some(x=>x.n===m.n))S.settings.markers.push(m)});
  if(src.cycle&&src.cycle.hist){const hn=new Set(S.cycle.hist.map(h=>h.n));src.cycle.hist.forEach(h=>{if(!hn.has(h.n))S.cycle.hist.push(h)});S.cycle.hist.sort((a,b)=>a.n-b.n)}
- if(src.plan&&src.plan.days)src.plan.days.forEach(d=>d.ex.forEach(e=>{const pe=planEx(e.name);if(pe&&!pe.setup&&e.setup)pe.setup=e.setup}))}
+ if(src.plan&&src.plan.days)src.plan.days.forEach(d=>d.ex.forEach(e=>{const pe=planExIn(d.name,e.name);if(pe&&!pe.setup&&e.setup)pe.setup=e.setup}))}
 
 /* ---------- Aktionen ---------- */
 async function act(a,ds,el){const A=S.active;switch(a){
@@ -705,14 +705,14 @@ async function act(a,ds,el){const A=S.active;switch(a){
  case 'pre':{const i=A.pre.indexOf(ds.v);if(i<0)A.pre.push(ds.v);else A.pre.splice(i,1);save();el.classList.toggle('on');break}
  case 'done':doneSet(+ds.ei,+ds.si);break;
  case 'exmenu':exMenu(+ds.ei);break;
- case 'ex-setup':{const e=A.ex[+ds.ei],v=await askP('Einstellung, z. B. Sitz 4, Füße 5',e.setup||'');if(v==null)return;e.setup=v.trim();const pe=planEx(e.name);if(pe)pe.setup=e.setup;save();closeSheet();break}
+ case 'ex-setup':{const e=A.ex[+ds.ei],v=await askP('Einstellung, z. B. Sitz 4, Füße 5',e.setup||'');if(v==null)return;e.setup=v.trim();const pe=planExIn(A.day,e.name);if(pe)pe.setup=e.setup;save();closeSheet();break}
  case 'ex-swap':{const v=await askP('Welche Übung stattdessen?',A.ex[+ds.ei].name);if(!v||!v.trim())return;swapEx(+ds.ei,v.trim());save();closeSheet();break}
  case 'ex-addset':{const e=A.ex[+ds.ei];e.specs.push({...last(e.specs)});const ls=last(e.sets);e.sets.push({w:ls?ls.w:'',r:'',rir:'',done:false,up:false,low:false});save();closeSheet();break}
  case 'ex-delset':{const e=A.ex[+ds.ei];if(e.sets.length>1){e.sets.pop();if(e.specs.length>e.sets.length)e.specs.pop()}save();closeSheet();break}
- case 'ex-rest':{const e=A.ex[+ds.ei],v=parseInt(await askP('Pause in Sekunden',e.rest));if(!v)return;e.rest=v;const pe=planEx(e.name);if(pe)pe.rest=v;save();closeSheet();break}
+ case 'ex-rest':{const e=A.ex[+ds.ei],v=parseInt(await askP('Pause in Sekunden',e.rest));if(!v)return;e.rest=v;const pe=planExIn(A.day,e.name);if(pe)pe.rest=v;save();closeSheet();break}
  case 'ex-up':{const i=+ds.ei;if(i>0)[A.ex[i-1],A.ex[i]]=[A.ex[i],A.ex[i-1]];save();closeSheet();break}
  case 'ex-del':if(await askC('Übung für heute entfernen?')){A.ex.splice(+ds.ei,1);save()}closeSheet();break;
- case 'addex':{const v=await askP('Name der Übung');if(!v||!v.trim())return;const n=v.trim();A.ex.push(mkEx(planEx(n)||{name:n,muscle:'',setup:'',rest:90,inc:null,sets:[{min:8,max:12,rir:'1'},{min:8,max:12,rir:'1'}]},A.day,A.mode));save();render();break}
+ case 'addex':{const v=await askP('Name der Übung');if(!v||!v.trim())return;const n=v.trim();A.ex.push(mkEx(planEx(n,A.day)||{name:n,muscle:'',setup:'',rest:90,inc:null,sets:[{min:8,max:12,rir:'1'},{min:8,max:12,rir:'1'}]},A.day,A.mode));save();render();break}
  case 'finish':finish();break;
  case 'discard':if(await askC('Einheit verwerfen? Alle Sätze von heute gehen verloren.')){S.active=null;relWake();stopTimer();save();render()}break;
  case 'tplus':if(T.done)startRest(15);else{T.end+=15e3;T.dur+=15;tick()}break;
@@ -1010,7 +1010,7 @@ document.addEventListener('click',e=>{
    if(val==null)return;
    const g=String(val).trim();
    e.gear=g;
-   const pe=planEx(e.name);if(pe)pe.gear=g;
+   const pe=planExIn(S.active.day,e.name);if(pe)pe.gear=g;
    const lp=lastPerf(e.name,S.active.day,g);
    e.last=lp?{date:lp.s.date,sets:lp.e.sets}:null;
    e.sets.forEach((s,i)=>{if(s.done)return;
@@ -1596,17 +1596,21 @@ function biApply(){
    Ergänzt wird nur, was im Plan fehlt, bestehende Übungen und der Verlauf bleiben. */
 let PU=null;
 const puDay=n=>((S.plan&&S.plan.days)||[]).find(x=>x.name===n);
+function puEx(day,name){const d=puDay(day);return d&&(d.ex||[]).find(y=>y.name===name)}
 function puMissing(d){
- let add=0,del=0;
+ let add=0,del=0,upd=0;
+ (d&&d.set||[]).forEach(b=>{const e=puEx(b.day,b.name);if(!e)return;
+  if(Object.entries(b.fields||{}).some(([k,v])=>(e[k]??'')!==v))upd++});
  (d&&d.add||[]).forEach(b=>{const day=puDay(b.day);if(!day)return;
   (b.ex||[]).forEach(x=>{if(!(day.ex||[]).some(y=>y.name===x.name))add++})});
  (d&&d.del||[]).forEach(b=>{const day=puDay(b.day);if(!day)return;
   (b.ex||[]).forEach(nm=>{if((day.ex||[]).some(y=>y.name===nm))del++})});
- return {add,del,n:add+del};
+ return {add,del,upd,n:add+del+upd};
 }
 function puTxt(d){const m=puMissing(d),p=[];
  if(m.add)p.push(m.add+(m.add>1?' Übungen kommen dazu':' Übung kommt dazu'));
  if(m.del)p.push(m.del+(m.del>1?' fallen weg':' fällt weg'));
+ if(m.upd)p.push(m.upd+(m.upd>1?' Einstellungen werden korrigiert':' Einstellung wird korrigiert'));
  return p.join(', ')+'. Dein Verlauf bleibt vollständig erhalten.';
 }
 async function planLoad(){
@@ -1637,9 +1641,13 @@ function puApply(){
    if((day.ex||[]).some(y=>y.name===x.name))return;
    const e=JSON.parse(JSON.stringify(x));e.id=uid();
    day.ex.push(e);a++})});
+ let u=0;
+ (PU.set||[]).forEach(b=>{const e=puEx(b.day,b.name);if(!e)return;
+  let ch=0;Object.entries(b.fields||{}).forEach(([k,v])=>{if((e[k]??'')!==v){e[k]=v;ch=1}});u+=ch});
  S.planV=PU.v;PU=null;
  save();render();
- toast(a?(a+' ergänzt'+(r?', '+r+' entfernt':'')):(r+' entfernt'));
+ const tp=[];if(a)tp.push(a+' ergänzt');if(r)tp.push(r+' entfernt');if(u)tp.push(u+' korrigiert');
+ toast(tp.join(', ')||'Plan ist aktuell');
 }
 
 /* ---------- Bereitschaft ----------
