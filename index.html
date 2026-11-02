@@ -207,6 +207,40 @@ nav.tabs button.on{color:var(--acc)}
 .cald.today b{color:var(--tx)}
 .cald u{display:flex;gap:3px;height:6px;text-decoration:none}
 .cald u i{width:6px;height:6px;border-radius:50%;display:block}
+.cald.sel{box-shadow:inset 0 0 0 2px var(--acc)}
+.cald.sel b{color:var(--tx)}
+.cald.out{opacity:.32}
+.calh{display:flex;align-items:center;gap:6px;margin:0 0 6px}
+.calt{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;border:0;background:none;padding:4px 2px;color:var(--tx);text-align:left}
+.calt b{font:700 17px var(--sans);white-space:nowrap}
+.calt small{font:600 12.5px var(--sans);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calsw{flex:none;border:0;border-radius:999px;background:var(--s2);color:var(--mut);font:650 12.5px var(--sans);padding:7px 12px}
+.calg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.calg .wd{font:650 11px var(--sans);color:var(--dim);text-align:center;padding:2px 0 3px}
+.calg .cald{padding:8px 0 6px;gap:4px}
+.calg .cald b{font-size:15px}
+.vgl{margin-top:10px;background:var(--s1);border-radius:16px;padding:2px 8px 8px}
+.vglh{display:flex;width:100%;justify-content:space-between;align-items:center;border:0;background:none;color:var(--tx);padding:10px 4px;font:650 14px var(--sans)}
+.vglh span{color:var(--dim);font-weight:600;font-size:12.5px}
+.vglt{width:100%;border-collapse:collapse;table-layout:fixed;font:650 11.5px var(--num);font-variant-numeric:tabular-nums}
+.vglt col.l{width:66px}.vglt col.a{width:48px}
+.vglt th{padding:0 0 4px;font-weight:600}
+.vglt th button{display:flex;flex-direction:column;align-items:center;width:100%;border:0;background:none;padding:4px 0;border-radius:9px;color:var(--dim);font:650 10.5px var(--sans)}
+.vglt th button b{font:700 13px var(--num);color:var(--mut)}
+.vglt th.sel button{background:var(--s3)}.vglt th.sel button b{color:var(--tx)}
+.vglt th.today button b{color:var(--acc)}
+.vglt th.a{font:650 10.5px var(--sans);color:var(--dim);vertical-align:bottom;padding-bottom:9px}
+.vglt td{text-align:center;padding:7px 0;border-top:1px solid var(--line);color:var(--tx);white-space:nowrap;overflow:hidden;line-height:1.25}
+.vglt td.sel{background:var(--s2)}
+.vglt td.sm{font-size:9.6px;letter-spacing:-.15px}
+.vglt td.e{color:var(--line)}
+.vglt td.a{background:var(--s2);font-weight:750}
+.vglt td small{display:block;font:650 9.5px var(--num);color:var(--dim)}
+.vglt td.l{text-align:left;padding-left:2px}
+.vglt td.l button{border:0;background:none;padding:0;color:var(--mut);font:600 11.5px var(--sans);text-align:left;white-space:normal;line-height:1.2}
+.vglt td.l span{color:var(--mut);font:600 11.5px var(--sans)}
+.vglt i.td{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 1px;vertical-align:middle}
+.vgln{font:600 12.5px var(--sans);color:var(--dim);padding:2px 4px 6px}
 .spark{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .spcard{background:var(--s1);border-radius:18px;padding:12px 12px 6px;min-width:0}
 .spcard small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -446,7 +480,7 @@ function vHeute(){const d=ui.date,r=S.days[d]||{},L=S.settings.labels,units=S.pl
  let h='';
  if(S.active)h+=`<button class="livebar" data-a="tab" data-t="training" style="--dc:${dayColor(S.active.day)}">${dot(dayColor(S.active.day))}<span class="grow"><b>${esc(S.active.day)} läuft</b><small>seit ${elapsed()}</small></span><span>Weiter</span></button>`;
  h+=backupBanner()+dueBanner()+readyCard(d);
- h+=calStrip()+weekStrip()+sparkCards();
+ h+=calCard()+weekStrip()+sparkCards();
  h+=`<div class="daynav"><button class="ib" data-a="dprev" aria-label="Vortag">‹</button><button class="dn-date" data-a="dtoday"><b>${d===todayStr()?'Heute':WDL[pd(d).getDay()]}</b><span>${fD(d)}</span></button><button class="ib" data-a="dnext" aria-label="Nächster Tag">›</button></div>`;
  h+=`<div class="trend" id="trend">${trendHtml(d)}</div>`;
  h+=`<section class="sec"><h3>Gewicht und Ernährung</h3><div class="grid2">${fld(r,'w','Gewicht','kg')}${fld(r,'kcal','Kalorien','kcal','numeric')}</div><div class="grid3 mt8">${fld(r,'p','Protein','g','numeric')}${fld(r,'c','Carbs','g','numeric')}${fld(r,'f','Fett','g','numeric')}</div><p class="hint" id="chk">${checks(d,r)}</p></section>`;
@@ -981,6 +1015,11 @@ document.addEventListener('click',e=>{
   closeSheet();if(f)f(v);return;
  }
  if(a==='dgo'){ui.date=v;ui.tab='heute';return render()}
+ if(a==='calmode'){ui.calm=ui.calm==='m'?'w':'m';return render()}
+ if(a==='calnav'){ui.date=ui.calm==='m'?addMonths(ui.date||todayStr(),+v):addDays(ui.date||todayStr(),7*(+v));return render()}
+ if(a==='calwk'){ui.calm='w';ui.date=v;return render()}
+ if(a==='cmptog'){try{localStorage.setItem('eisen.cmp',cmpOpen()?'0':'1')}catch(e){}return render()}
+ if(a==='cmpm'){ui.prog='tag';ui.metric=v==='__bp1'?'bp1':v==='__bp2'?'bp2':v;return go('progress')}
  if(a==='fixload'){
   const q=v.split(','),ei=+q[0],si=+q[1],w=parseFloat(q[2]);
   const e=S.active&&S.active.ex[ei];
@@ -1749,6 +1788,132 @@ function pBP(M,m){
    :'<p class="hint">Für eine Einordnung braucht es Messungen an mindestens drei der letzten sieben Tage.</p>'}
   <p class="hint">Vergleichbar wird es so: sitzend nach fünf Minuten Ruhe, Arm auf Herzhöhe, vor Kaffee und Training.
   Zweimal im Abstand von einer Minute messen und den Schnitt eintragen. Punkte sind Tageswerte, die Linien der 7-Tage-Schnitt.</p></div>`;
+}
+
+/* ---------- Kalender und Vergleich ----------
+   Woche: Tage nebeneinander. Monat: Raster zum Springen, im Vergleich die Wochen.
+   Die Tabelle zeigt nur Zeilen, für die im Zeitraum etwas eingetragen ist.
+   Der Wert in der letzten Spalte ist der Schnitt, darunter der Abstand zur Vorperiode. */
+const MONN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const WD2=['Mo','Di','Mi','Do','Fr','Sa','So'];
+function isoWeek(d){const x=pd(d),t=new Date(Date.UTC(x.getFullYear(),x.getMonth(),x.getDate())),k=t.getUTCDay()||7;
+ t.setUTCDate(t.getUTCDate()+4-k);const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y0)/864e5+1)/7)}
+function addMonths(d,n){const x=pd(d),y=x.getFullYear(),m=x.getMonth()+n,l=new Date(y,m+1,0).getDate();
+ return iso(new Date(y,m,Math.min(x.getDate(),l),12))}
+const monthStart=d=>d.slice(0,8)+'01';
+const monthEnd=d=>{const x=pd(d);return iso(new Date(x.getFullYear(),x.getMonth()+1,0,12))};
+const HM={};
+function dayVal(d,f){const r=S.days[d],v=r?num(r[f]):null;if(v!=null)return v;
+ if(typeof HIST!=='undefined'&&HIST&&Array.isArray(HIST[f])){if(!HM[f])HM[f]=new Map(HIST[f]);const h=HM[f].get(d);return h==null?null:h}
+ return null}
+const SG=(n,d)=>sg(n,d);
+function cmpOpen(){try{return localStorage.getItem('eisen.cmp')!=='0'}catch(e){return true}}
+function cmpRows(){
+ const out=[['__tr','Training','',0]];
+ metrics().forEach(x=>{
+  if(x[0]==='bpd1'||x[0]==='bpd2')return;
+  if(x[0]==='bps1')return out.push(['__bp1','Blutdruck','mmHg',0]);
+  if(x[0]==='bps2')return out.push(['__bp2','Blutdruck nachm.','mmHg',0]);
+  out.push([x[0],String(x[1]).replace(/ morgens$/,'').replace(/ nachmittags$/,' nachm.'),x[2],x[3]]);
+ });
+ return out;
+}
+function daysIn(a,b){const o=[];for(let d=a;d<=b;d=addDays(d,1))o.push(d);return o}
+/* Wert eines Zeitraums: Schnitt über die Tage mit Eintrag, beim Training die Zahl der Einheiten */
+function perVal(row,days,SB){
+ const k=row[0];
+ if(k==='__tr')return days.reduce((n,d)=>n+(SB[d]||[]).length,0)||null;
+ if(k==='__bp1'||k==='__bp2'){const q=k.slice(-1),a=[],b=[];
+  days.forEach(d=>{const x=dayVal(d,'bps'+q),y=dayVal(d,'bpd'+q);if(x!=null&&y!=null){a.push(x);b.push(y)}});
+  return a.length?[avg(a),avg(b)]:null}
+ const v=days.map(d=>dayVal(d,k)).filter(x=>x!=null);
+ return v.length?avg(v):null;
+}
+function cmpFmt(row,v,isAvg){
+ if(v==null)return '–';
+ const k=row[0];
+ if(k==='__tr')return v+'×';
+ if(Array.isArray(v))return Math.round(v[0])+(isAvg?'/':'<br>')+Math.round(v[1]);
+ if(k==='steps')return v>=1000?fmt(v/1000,1)+'k':fmt(v,0);
+ if(k==='kcal')return String(Math.round(v));
+ if(k==='stool'&&!isAvg)return fmt(v,0);
+ return fmt(v,row[3]);
+}
+function cmpDelta(row,a,b){
+ if(a==null||b==null)return '';
+ const sg=(x,d)=>{const r=Number(x.toFixed(d));return SG(r===0?0:r,d)};
+ const k=row[0];
+ if(k==='__tr')return a===b?'±0':(a>b?'+':'−')+Math.abs(a-b);
+ if(Array.isArray(a))return sg(a[0]-b[0],0)+'/'+sg(a[1]-b[1],0);
+ if(k==='steps')return sg((a-b)/1000,1)+'k';
+ return sg(a-b,k==='kcal'?0:row[3]);
+}
+function calCard(){
+ const sel=ui.date||todayStr(),M=ui.calm==='m',SB={};
+ S.sessions.forEach(s=>{(SB[s.date]=SB[s.date]||[]).push(s)});
+ const dots=d=>{const r=S.days[d]||{},se=SB[d]||[];
+  return se.map(s=>`<i style="background:${dayColor(s.day)}"></i>`).join('')
+   +((r.w!=null||r.kcal!=null)&&!se.length?'<i style="background:var(--dim)"></i>':'')};
+ const cell=(d,out)=>`<button class="cald${d===todayStr()?' today':''}${d===sel?' sel':''}${out?' out':''}" data-pa="dgo" data-v="${d}">`
+  +(M?'':WD2[(pd(d).getDay()+6)%7])+`<b>${pd(d).getDate()}</b><u>${dots(d)}</u></button>`;
+ let title,sub,body,cols,prev,heads;
+ if(!M){
+  const mo=monday(sel),so=addDays(mo,6),a=pd(mo),z=pd(so);
+  title='KW '+isoWeek(mo);
+  sub=a.getMonth()===z.getMonth()?`${a.getDate()}. bis ${z.getDate()}. ${MONN[z.getMonth()]}`
+   :`${a.getDate()}. ${MONN[a.getMonth()].slice(0,3)}. bis ${z.getDate()}. ${MONN[z.getMonth()].slice(0,3)}.`;
+  body='<div class="cal">'+daysIn(mo,so).map(d=>cell(d)).join('')+'</div>';
+  cols=daysIn(mo,so).map(d=>({days:[d],key:d,h:`<button data-pa="dgo" data-v="${d}">${WD2[(pd(d).getDay()+6)%7]}<b>${pd(d).getDate()}</b></button>`,
+   sel:d===sel,today:d===todayStr()}));
+  prev=daysIn(addDays(mo,-7),addDays(mo,-1));
+ }else{
+  const ms=monthStart(sel),me=monthEnd(sel),g0=monday(ms);
+  title=MONN[pd(ms).getMonth()];sub=String(pd(ms).getFullYear());
+  let g='<div class="calg">'+WD2.map(w=>`<div class="wd">${w}</div>`).join('');
+  for(let d=g0;d<=me||((daysBetween(g0,d))%7);d=addDays(d,1))g+=cell(d,d<ms||d>me);
+  body=g+'</div>';
+  cols=[];
+  for(let w=g0;w<=me;w=addDays(w,7))cols.push({days:daysIn(w,addDays(w,6)),key:w,
+   h:`<button data-pa="calwk" data-v="${w}">KW<b>${isoWeek(w)}</b></button>`,sel:monday(sel)===w,today:monday(todayStr())===w});
+  const pm=addMonths(ms,-1);
+  prev=daysIn(monthStart(pm),monthEnd(pm));
+ }
+ const td=todayStr();
+ let per=M?daysIn(monthStart(sel),monthEnd(sel)):cols.flatMap(c=>c.days);
+ const lauf=per.some(d=>d>td)&&per[0]<=td;
+ if(lauf){per=per.filter(d=>d<=td);prev=prev.slice(0,per.length)}
+ const rows=cmpRows().filter(r=>cols.some(c=>perVal(r,c.days,SB)!=null));
+ const open=cmpOpen();
+ let t='';
+ if(open){
+  if(!rows.length)t=`<p class="vgln">${M?'In diesem Monat':'In dieser Woche'} ist noch nichts eingetragen.</p>`;
+  else{
+   t=`<table class="vglt"><colgroup><col class="l">${cols.map(()=>'<col>').join('')}<col class="a"></colgroup>
+    <thead><tr><th></th>${cols.map(c=>`<th class="${c.sel?'sel ':''}${c.today?'today':''}">${c.h}</th>`).join('')}<th class="a">Ø</th></tr></thead><tbody>`;
+   rows.forEach(r=>{
+    const lab=r[0]==='__tr'?`<span>${esc(r[1])}</span>`
+     :`<button data-pa="cmpm" data-v="${r[0]}">${esc(r[1])}</button>`;
+    t+=`<tr><td class="l">${lab}</td>`+cols.map(c=>{
+     let v;
+     if(r[0]==='__tr'&&!M){const se=SB[c.key]||[];
+      v=se.length?se.map(s=>`<i class="td" style="background:${dayColor(s.day)}" title="${esc(s.day)}"></i>`).join(''):null}
+     else v=perVal(r,c.days,SB);
+     const tx=v==null?'·':(typeof v==='string'?v:cmpFmt(r,v,M));
+     const lang=typeof v!=='string'&&v!=null&&(r[0]==='kcal'||tx.replace(/<br>.*/,'').length>=5);
+     return `<td class="${c.sel?'sel ':''}${v==null?'e':''}${lang?' sm':''}">${tx}</td>`;
+    }).join('');
+    const a=perVal(r,per,SB),b=perVal(r,prev,SB);
+    t+=`<td class="a">${cmpFmt(r,a,true)}<small>${cmpDelta(r,a,b)||'&nbsp;'}</small></td></tr>`;
+   });
+   t+=`</tbody></table><p class="vgln" style="padding-top:8px">Ø ist der Schnitt ${M?'des Monats':'der Woche'}, darunter der Abstand zu${M?'m Vormonat':'r Vorwoche'}${lauf?', beide bis zum heutigen Tag gerechnet':''}. Beim Training steht dort die Zahl der Einheiten.${M?' Die Spalten sind Wochenschnitte.':''} Tipp auf einen Tag springt dorthin, Tipp auf eine Zeile öffnet den Verlauf.</p>`;
+  }
+ }
+ return `<section class="calc"><div class="calh">
+  <button class="ib sm" data-pa="calnav" data-v="-1" aria-label="${M?'Vormonat':'Vorwoche'}">‹</button>
+  <button class="calt" data-a="dtoday" aria-label="Zu heute springen"><b>${title}</b><small>${sub}</small></button>
+  <button class="ib sm" data-pa="calnav" data-v="1" aria-label="${M?'Nächster Monat':'Nächste Woche'}">›</button>
+  <button class="calsw" data-pa="calmode">${M?'Woche':'Monat'}</button></div>${body}
+  <div class="vgl"><button class="vglh" data-pa="cmptog"><b>${M?'Wochen im Vergleich':'Tage im Vergleich'}</b><span>${open?'ausblenden':'anzeigen'}</span></button>${t}</div></section>`;
 }
 
 /* ---------- Referenzbereiche ----------
