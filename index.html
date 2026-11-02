@@ -493,6 +493,7 @@ function vHeute(){const d=ui.date,r=S.days[d]||{},L=S.settings.labels,units=S.pl
  h+=`<section class="sec"><details class="card"${(r.supps||[]).length?' open':''}><summary>Supplements${(r.supps||[]).length?` · ${(r.supps||[]).length}`:''}</summary><div class="chips mt8">${S.settings.supps.map(s=>chip(s,(r.supps||[]).includes(s),'supp')).join('')}</div><button class="link mt8" data-a="suppall">Alle abhaken</button></details></section>`;
  h+=`<section class="sec"><h3>Tags</h3><div class="chips">${S.settings.tags.map(s=>chip(s,(r.tags||[]).includes(s),'tag')).join('')}</div><div class="addrow"><input class="txt" id="newtag" placeholder="Neuer Tag"><button class="ib" data-a="addtag" aria-label="Tag hinzufügen">+</button></div></section>`;
  h+=`<section class="sec"><h3>Notiz</h3><textarea class="txt" rows="3" data-f="note" placeholder="Wie lief der Tag?">${esc(r.note||'')}</textarea></section>`;
+ h+=cmpCard();
  return h}
 
 /* ---------- Training ---------- */
@@ -1912,9 +1913,12 @@ function calCard(){
   <button class="ib sm" data-pa="calnav" data-v="-1" aria-label="${M?'Vormonat':'Vorwoche'}">‹</button>
   <button class="calt" data-a="dtoday" aria-label="Zu heute springen"><b>${title}</b><small>${sub}</small></button>
   <button class="ib sm" data-pa="calnav" data-v="1" aria-label="${M?'Nächster Monat':'Nächste Woche'}">›</button>
-  <button class="calsw" data-pa="calmode">${M?'Woche':'Monat'}</button></div>${body}
-  <div class="vgl"><button class="vglh" data-pa="cmptog"><b>${M?'Wochen im Vergleich':'Tage im Vergleich'}</b><span>${open?'ausblenden':'anzeigen'}</span></button>${t}</div></section>`;
+  <button class="calsw" data-pa="calmode">${M?'Woche':'Monat'}</button></div>${body}</section>`
+  +(CALV=`<div class="vgl"><button class="vglh" data-pa="cmptog"><b>${M?'Wochen im Vergleich':'Tage im Vergleich'}</b><span>${open?'ausblenden':'anzeigen'}</span></button>${t}</div>`,'');
 }
+/* Die Tabelle rechnet calCard mit, sie steht aber unter den Eingabefeldern */
+let CALV='';
+function cmpCard(){return CALV?`<section class="sec">${CALV}</section>`:''}
 
 /* ---------- Referenzbereiche ----------
    Orientierungswerte für erwachsene Männer. Labore rechnen mit eigenen Bereichen,
