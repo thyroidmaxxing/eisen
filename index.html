@@ -347,6 +347,40 @@ nav.tabs button.on{color:var(--acc)}
 .t td.ref-hart-hi,.t td.ref-hart-lo{color:var(--red);font-weight:700}
 .t tr.tsep td{padding-top:18px;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.02em}
 
+.kwarn{background:var(--s2);border-radius:14px;padding:11px 13px;margin:4px 0 10px;box-shadow:inset 4px 0 0 var(--red)}
+.kwarn b{display:block;font-size:14.5px;line-height:1.3}
+.kwarn span{display:block;font-size:13px;color:var(--mut);margin-top:4px;line-height:1.4}
+.stb .ankn{font-size:21px;line-height:26px}
+.note-line.mdue{box-shadow:inset 4px 0 0 var(--yel)}
+.mrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--s2)}
+.card.list>.mrow:first-child{border-top:0}
+.mchk{flex:none;width:40px;height:40px;border-radius:12px;border:2px solid var(--line);background:none;font:800 19px var(--num);color:#fff}
+.mrow.ok .mchk{background:var(--acc);border-color:var(--acc)}
+.mrow.skip .mchk{border-style:dashed;color:var(--dim)}
+.mrow.skip .mtx b{color:var(--dim);text-decoration:line-through}
+.mrow.due .mchk{border-color:var(--yel)}
+.mrow.due small{color:var(--yel)}
+.mtx{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0}
+.mtx b{display:block;font-size:15px;font-weight:650;line-height:1.3}
+.mtx b em{font-style:normal;color:var(--mut);font-weight:600;font-size:13.5px}
+.mtx small{display:block;font-size:12.5px;color:var(--mut);font-variant-numeric:tabular-nums;margin-top:1px}
+.mdev{font-style:normal;color:var(--yel)}
+.mdose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 58px 34px;gap:6px;align-items:center;margin-top:6px}
+.mdose .mug{font:600 12.5px var(--num);color:var(--mut);text-align:right}
+.medit .lbl.mt16{display:block}
+.mplan{padding:8px 0;border-top:1px solid var(--s2)}
+.mplan b{display:block;font-size:15px}
+.mplan small{display:block;font-size:12.5px;color:var(--mut);margin-bottom:3px}
+.mplan span{display:inline-block;margin:3px 6px 0 0;padding:3px 8px;border-radius:8px;background:var(--s2);font:600 12.5px var(--num);font-variant-numeric:tabular-nums}
+.chart .ax.ov{fill:#FF5A1F}
+.chl{display:block;font-size:13.5px;color:var(--mut);font-weight:650}
+.ovk{display:inline-block;width:18px;border-top:2px dashed #FF5A1F;vertical-align:middle;margin-right:2px}
+.srow small{display:block;font-size:12px;color:var(--dim)}
+.trend b.pb{font-size:15px}
+.sheet-card .medit{background:var(--s2)}
+.sheet-card .medit .txt{background:var(--s3)}
+.srow .chips{flex-wrap:nowrap}
+
 </style>
 </head>
 <body>
@@ -414,9 +448,9 @@ function defaultPlan(){return {rotation:['Push','Pull','Legs','Off','OK','Legs 2
  {name:'OK',ex:[X('KH Seitheben','seitliche Schulter','1x10-13,2x13-16@0'),X('Machine Flat Press','mittlere Brust','1x5-8,2x8-11@0-1'),X('Langhantelrudern schwer','Trapez','1x5-8,2x8-11@0-1'),X('Incline Cable Press','obere Brust','1x7-10,2x10-13@0-1'),X('Lat Pull Down einarmig','Lat vertikal','1x8-11,2x11-14@0-1'),X('SZ Cable Curl','Bizeps','1x8-11,2x11-14@0'),X('Overhead Triceps Ext. mit Bank','Trizeps langer Kopf','1x9-12,2x12-15@0'),...ABS()]},
  {name:'Legs 2',ex:[X('Lying Ham Curl','Hamstring Iso','1x7-10,2x10-13@0-1'),X('RDL','Hamstring Hinge','1x4-7,1x7-10@1-2'),X('Hackenschmidt','Quad','1x7-10,1x10-13@1'),X('Single Leg Leg Extension','Quad Iso','1x9-12,2x12-15@0'),X('Seated Adduction','Adduktoren','1x9-12,1x12-15@0'),X('Seated Abduction','Abduktoren','2x12-15@0'),X('Wadenheben sitzend, Außenrotation','Wade','1x10-13,2x13-16@0'),...ABS()]}]}}
 const MK=[['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],['Testosteron gesamt','ng/dl'],['Testosteron frei','pg/ml'],['Estradiol','pg/ml'],['SHBG','nmol/l'],['LH','U/l'],['FSH','U/l'],['Prolaktin','ng/ml'],['DHEA-S','µg/dl'],['Cortisol morgens','µg/dl'],['Hämatokrit','%'],['Hämoglobin','g/dl'],['Ferritin','ng/ml'],['Vitamin D (25-OH)','ng/ml'],['HbA1c','%'],['Glukose nüchtern','mg/dl'],['LDL','mg/dl'],['HDL','mg/dl'],['Triglyceride','mg/dl'],['GOT (AST)','U/l'],['GPT (ALT)','U/l'],['GGT','U/l'],['Kreatinin','mg/dl'],['CK','U/l'],['Vitamin A (Retinol)','µg/l'],['Kupfer','µg/dl']];
-function fresh(){return {v:1,days:{},photos:[],sessions:[],measures:[],blood:[],tolerance:[],phases:[],active:null,plan:defaultPlan(),
+function fresh(){return {v:1,days:{},photos:[],meds:{v:[]},sessions:[],measures:[],blood:[],tolerance:[],phases:[],active:null,plan:defaultPlan(),
  cycle:{n:18,week:1,len:6,intro:true,deload:true,start:todayStr(),hist:[]},
- settings:{inc:2.5,backupDays:7,lastBackup:null,measureEvery:14,bloodEvery:90,
+ settings:{inc:2.5,bkPhotos:false,backupDays:7,lastBackup:null,measureEvery:14,bloodEvery:90,
   labels:['Temp morgens','Temp nachmittags','Puls morgens','Puls nachmittags'],
   supps:['Kreatin','Vitamin D3','Magnesium','Omega-3','Elektrolyte','EAA'],
   tags:['Migräne','Kopfschmerzen','Schlecht geschlafen','Stress','Refeed','Energie hoch','Energie tief','Völlegefühl'],
@@ -479,12 +513,13 @@ function fld(r,f,label,unit,mode='decimal'){return `<label class="fld"><span>${e
 function vHeute(){const d=ui.date,r=S.days[d]||{},L=S.settings.labels,units=S.plan.days.map(x=>x.name);
  let h='';
  if(S.active)h+=`<button class="livebar" data-a="tab" data-t="training" style="--dc:${dayColor(S.active.day)}">${dot(dayColor(S.active.day))}<span class="grow"><b>${esc(S.active.day)} läuft</b><small>seit ${elapsed()}</small></span><span>Weiter</span></button>`;
- h+=backupBanner()+dueBanner()+readyCard(d);
+ h+=backupBanner()+dueBanner()+medDue(d)+kwDue(d)+ankWarnTop(d)+readyCard(d);
  h+=calCard()+weekStrip()+sparkCards();
  h+=`<div class="daynav"><button class="ib" data-a="dprev" aria-label="Vortag">‹</button><button class="dn-date" data-a="dtoday"><b>${d===todayStr()?'Heute':WDL[pd(d).getDay()]}</b><span>${fD(d)}</span></button><button class="ib" data-a="dnext" aria-label="Nächster Tag">›</button></div>`;
  h+=`<div class="trend" id="trend">${trendHtml(d)}</div>`;
  h+=`<section class="sec"><h3>Gewicht und Ernährung</h3><div class="grid2">${fld(r,'w','Gewicht','kg')}${fld(r,'kcal','Kalorien','kcal','numeric')}</div><div class="grid3 mt8">${fld(r,'p','Protein','g','numeric')}${fld(r,'c','Carbs','g','numeric')}${fld(r,'f','Fett','g','numeric')}</div><p class="hint" id="chk">${checks(d,r)}</p></section>`;
  h+=`<section class="sec"><h3>Temperatur, Puls und Blutdruck</h3><div class="grid2">${fld(r,'t1',L[0],'°C')}${fld(r,'hr1',L[2],'bpm','numeric')}</div><div class="grid2 mt8">${fld(r,'bps1','Blutdruck sys.','mmHg','numeric')}${fld(r,'bpd1','Blutdruck dia.','mmHg','numeric')}</div><details class="card mt8"${(r.t2!=null||r.hr2!=null||r.bps2!=null||r.bpd2!=null)?' open':''}><summary>Nachmittags</summary><div class="grid2">${fld(r,'t2',L[1],'°C')}${fld(r,'hr2',L[3],'bpm','numeric')}</div><div class="grid2 mt8">${fld(r,'bps2','Blutdruck sys.','mmHg','numeric')}${fld(r,'bpd2','Blutdruck dia.','mmHg','numeric')}</div></details></section>`;
+ h+=medSection(d)+ankleSection(d);
  h+=`<section class="sec"><h3>Aktivität und Schlaf</h3><div class="grid3">${fld(r,'cardio','Cardio','min','numeric')}${fld(r,'steps','Schritte','','numeric')}${fld(r,'sleep','Schlaf','h')}</div></section>`;
  h+=`<section class="sec"><h3>Training und Verdauung</h3><div class="card list">
   <div class="srow"><span>Einheit</span><select class="txt w-auto" data-f="unit"><option value="">Keine</option>${units.map(u=>`<option ${r.unit===u?'selected':''}>${esc(u)}</option>`).join('')}${r.unit&&!units.includes(r.unit)?`<option selected>${esc(r.unit)}</option>`:''}</select></div>
@@ -555,17 +590,25 @@ function edHtml(){const e=ui.edit.e;return `<div class="sh-h"><h2>${ui.edit.ei==
 
 /* ---------- Diagramm ---------- */
 function chartSVG(sets,opt={}){const all=sets.flatMap(s=>s.pts);if(all.length<2)return `<p class="empty">${opt.empty||'Noch zu wenig Daten für einen Verlauf.'}</p>`;
- const W=360,H=opt.h||200,pl=40,pr=10,pt=10,pb=24;let t0=Infinity,t1=-Infinity,v0=Infinity,v1=-Infinity;
+ const W=360,H=opt.h||200,pl=40,pr=opt.ov?40:10,pt=10,pb=24;let t0=Infinity,t1=-Infinity,v0=Infinity,v1=-Infinity;
  all.forEach(([d,v])=>{const t=tms(d);if(t<t0)t0=t;if(t>t1)t1=t;if(v<v0)v0=v;if(v>v1)v1=v});
- if(t1===t0)t1=t0+864e5;const pad=(v1-v0)*.08||Math.abs(v1)*.05||1;v0-=pad;v1+=pad;
+ if(t1===t0)t1=t0+864e5;const pad=(v1-v0)*.08||Math.abs(v1)*.05||1;v0-=pad;v1+=pad;if(opt.y0!=null)v0=Math.min(v0,opt.y0);if(opt.y1!=null)v1=Math.max(v1,opt.y1);
  const X=t=>+(pl+(t-t0)/(t1-t0)*(W-pl-pr)).toFixed(1),Y=v=>+(pt+(1-(v-v0)/(v1-v0))*(H-pt-pb)).toFixed(1);
- const span=v1-v0,dec=span<3?2:span<30?1:0;let g='';
+ const span=v1-v0,dec=opt.dec??(span<3?2:span<30?1:0);let g='';
  (opt.bands||[]).forEach(b=>{const a=Math.max(tms(b.from),t0),z=Math.min(tms(b.to),t1);if(z>a)g+=`<rect x="${X(a)}" y="${pt}" width="${(X(z)-X(a)).toFixed(1)}" height="${H-pt-pb}" fill="${b.color}" opacity=".16"/>`});
- for(let i=0;i<4;i++){const v=v0+span*i/3,y=Y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#2E353C"/><text x="${pl-6}" y="${y+4}" text-anchor="end" class="ax">${v.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}</text>`}
+ for(const v of (opt.ticks||[0,1,2,3].map(i=>v0+span*i/3))){const y=Y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#2E353C"/><text x="${pl-6}" y="${y+4}" text-anchor="end" class="ax">${v.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}</text>`}
  const ds=(t1-t0)/864e5,fx=t=>{const d=new Date(t);return ds<200?`${p2(d.getDate())}.${p2(d.getMonth()+1)}.`:`${p2(d.getMonth()+1)}/${String(d.getFullYear()).slice(2)}`};
  g+=`<text x="${pl}" y="${H-6}" class="ax">${fx(t0)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end" class="ax">${fx(t1)}</text>`;
  sets.forEach(s=>{if(s.dots&&s.pts.length<=600)s.pts.forEach(([d,v])=>{g+=`<circle cx="${X(tms(d))}" cy="${Y(v)}" r="${s.r||2}" fill="${s.color}" opacity="${s.op||.5}"/>`});
   if(s.line!==false&&s.pts.length>1)g+=`<path d="${s.pts.map(([d,v],i)=>(i?'L':'M')+X(tms(d))+','+Y(v)).join('')}" fill="none" stroke="${s.color}" stroke-width="${s.w||2}" stroke-linejoin="round" stroke-linecap="round"/>`});
+ if(opt.ov&&opt.ov.steps&&opt.ov.steps.length){const st=opt.ov.steps,dt=opt.ov.dots||[],oc=opt.ov.color||'#FF5A1F';
+  const at=t=>{let v=0;st.forEach(([d,u])=>{if(tms(d)<=t)v=u});return v};
+  const top=Math.max(at(t0),...st.filter(x=>tms(x[0])>t0&&tms(x[0])<=t1).map(x=>x[1]),...dt.filter(x=>tms(x[0])>=t0&&tms(x[0])<=t1).map(x=>x[1]),1),mx=top*1.15;
+  const Y2=v=>+(pt+(1-v/mx)*(H-pt-pb)).toFixed(1);
+  let p='M'+X(t0)+','+Y2(at(t0));st.forEach(([d,u])=>{const t=tms(d);if(t>t0&&t<=t1)p+='H'+X(t)+'V'+Y2(u)});p+='H'+X(t1);
+  g+=`<path d="${p}" fill="none" stroke="${oc}" stroke-width="2" stroke-dasharray="5 3"/>`;
+  dt.forEach(([d,u])=>{const t=tms(d);if(t>=t0&&t<=t1)g+=`<circle cx="${X(t)}" cy="${Y2(u)}" r="2.4" fill="${oc}"/>`});
+  g+=`<text x="${W-pr+5}" y="${Y2(top)+4}" class="ax ov">${fmt(top,top%1?1:0)}</text><text x="${W-pr+5}" y="${Y2(0)+4}" class="ax ov">0</text><text x="${W-pr+5}" y="${pt+4}" class="ax ov">µg</text>`}
  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label||'Verlauf')}">${g}</svg>`}
 function segs(k,items){return `<div class="seg">${items.map(([v,l])=>`<button class="${ui[k]===v?'on':''}" data-a="seg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`}
 function ranges(){return `<div class="seg sm">${['1M','3M','1J','Alles'].map(l=>`<button class="${ui.range===l?'on':''}" data-a="range" data-v="${l}">${l}</button>`).join('')}</div>`}
@@ -597,9 +640,9 @@ function pKraft(){const cnt={};S.sessions.forEach(s=>s.ex.forEach(e=>{cnt[e.name
  const gset=[...new Set(rows.map(r=>r.g))];const gser=gset.map((g,i)=>({g,pts:rows.filter(r=>!r.dl&&r.g===g).map(r=>[r.d,rnd(r.v)]),color:i===gset.length-1?C.chalk:[C.blue,C.yel,C.grn][i%3]}));const pts=rows.filter(r=>!r.dl).map(r=>[r.d,rnd(r.v)]),top=rows.reduce((m,r)=>!m||r.v>m.v?r:m,null);
  return `<select class="txt" data-sel="ex">${names.map(n=>`<option ${n===ui.ex?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8"><div class="kv"><div><small>Bestwert, geschätztes 1RM</small><b>${top?fmt(top.v,1)+' kg':'–'}</b></div><div><small>Datum</small><b>${top?fD(top.d):'–'}</b></div></div>${chartSVG(gser.map(x=>({pts:x.pts,color:x.color,dots:true,r:2.6,op:.9,w:2})),{label:'Kraftverlauf'})}${gset.length>1?`<div class="legend">${gser.map(x=>`<span>${dot(x.color)}${esc(x.g||'ohne Version')}</span>`).join('')}</div><p class="hint">Getrennte Linien, weil das Gerät gewechselt hat. Die Lasten sind nicht vergleichbar.</p>`:''}</div>
  <section class="sec"><h3>Bester Satz pro Einheit</h3><div class="card list">${rows.slice(-12).reverse().map(r=>`<div class="row"><span class="grow"><b>${dv(r.t.w)} kg × ${r.t.r}${r.t.rir!=null?` @${r.t.rir}`:''}</b><small>${fD(r.d)}${r.dl?', Deload':''}</small></span><span class="mut">${fmt(r.v,1)}</span></div>`).join('')}</div></section>`}
-function metrics(){const L=S.settings.labels;return [['w','Gewicht','kg',1],['kcal','Kalorien','kcal',0],['p','Protein','g',0],['c','Carbs','g',0],['f','Fett','g',0],['t1',L[0],'°C',2],['t2',L[1],'°C',2],['hr1',L[2],'bpm',0],['hr2',L[3],'bpm',0],['bps1','Blutdruck sys. morgens','mmHg',0],['bpd1','Blutdruck dia. morgens','mmHg',0],['bps2','Blutdruck sys. nachmittags','mmHg',0],['bpd2','Blutdruck dia. nachmittags','mmHg',0],['cardio','Cardio','min',0],['steps','Schritte','',0],['sleep','Schlaf','h',1],['stool','Stuhlgang','pro Tag',1]]}
+function metrics(){const L=S.settings.labels;return [['w','Gewicht','kg',1],['kcal','Kalorien','kcal',0],['p','Protein','g',0],['c','Carbs','g',0],['f','Fett','g',0],['t1',L[0],'°C',2],['t2',L[1],'°C',2],['hr1',L[2],'bpm',0],['hr2',L[3],'bpm',0],['bps1','Blutdruck sys. morgens','mmHg',0],['bpd1','Blutdruck dia. morgens','mmHg',0],['bps2','Blutdruck sys. nachmittags','mmHg',0],['bpd2','Blutdruck dia. nachmittags','mmHg',0],['cardio','Cardio','min',0],['steps','Schritte','',0],['sleep','Schlaf','h',1],['stool','Stuhlgang','pro Tag',1],['ankle','Knöchel-Skala','0 bis 3',1],['medug','Dosis','µg',1]]}
 function pTag(){const M=tagMetrics(),m=M.find(x=>x[0]===ui.metric)||M[5];if(m[0]==='bp1'||m[0]==='bp2')return pBP(M,m);const all=series(m[0]),ro=rolling(all),c=cutoff(),a=n=>avg(rng(todayStr(),0,n-1,m[0]));
- return `<select class="txt" data-sel="metric">${M.map(x=>`<option value="${x[0]}" ${x[0]===m[0]?'selected':''}>${esc(x[1])}</option>`).join('')}</select><div class="mt8">${ranges()}</div><div class="card"><div class="kv"><div><small>Ø 7 Tage</small><b>${fmt(a(7),m[3])}</b></div><div><small>Ø 30 Tage</small><b>${fmt(a(30),m[3])}</b></div><div><small>Ø 90 Tage</small><b>${fmt(a(90),m[3])}</b></div></div>${chartSVG([{pts:all.filter(p=>p[0]>=c),color:C.mut,dots:true,line:false},{pts:ro.filter(p=>p[0]>=c),color:C.chalk,w:2.2}],{label:m[1]})}<p class="hint">Punkte sind Tageswerte, die Linie ist der 7-Tage-Schnitt${m[2]?`, Einheit ${m[2]}`:''}.</p></div>`}
+ return `<select class="txt" data-sel="metric">${M.map(x=>`<option value="${x[0]}" ${x[0]===m[0]?'selected':''}>${esc(x[1])}</option>`).join('')}</select><div class="mt8">${ranges()}</div><div class="card"><div class="kv"><div><small>Ø 7 Tage</small><b>${fmt(a(7),m[3])}</b></div><div><small>Ø 30 Tage</small><b>${fmt(a(30),m[3])}</b></div><div><small>Ø 90 Tage</small><b>${fmt(a(90),m[3])}</b></div></div>${chartSVG([{pts:all.filter(p=>p[0]>=c),color:C.mut,dots:true,line:false},{pts:ro.filter(p=>p[0]>=c),color:C.chalk,w:2.2}],Object.assign({label:m[1],ov:['hr1','t1','ankle'].includes(m[0])?doseOv():null},m[0]==='ankle'?ANKY:{}))}<p class="hint">Punkte sind Tageswerte, die Linie ist der 7-Tage-Schnitt${m[2]?`, Einheit ${m[2]}`:''}.</p>${ovHint(m[0])}</div>`}
 function perfIndex(){const res={},ss=S.sessions,best=e=>Math.max(0,...e.sets.map(t=>e1rm(t.w,t.r)||0));
  ss.forEach((s,i)=>{if(s.mode==='deload')return;const ratios=[];s.ex.forEach(e=>{const b=best(e);if(!b)return;const prev=[];for(let j=i-1;j>=0&&prev.length<4;j--){if(ss[j].mode==='deload')continue;const pe=ss[j].ex.find(x=>x.name===e.name);if(!pe)continue;const pb=best(pe);if(pb)prev.push(pb)}if(prev.length>=2)ratios.push(b/avg(prev))});
   if(!ratios.length)return;const key=s.pre&&s.pre.length?[...s.pre].sort().join(' + '):'Keine Angabe';(res[key]=res[key]||[]).push(avg(ratios)*100)});return res}
@@ -617,7 +660,7 @@ function pAnalyse(){const tags=S.settings.tags;if(!tags.includes(ui.tag))ui.tag=
  return h}
 
 /* ---------- Health ---------- */
-function vHealth(){return segs('health',[['koerper','Körper'],['blut','Blutwerte'],['vert','Verträglichkeit']])+({koerper:hKoerper,blut:hBlut,vert:hVert})[ui.health]()}
+function vHealth(){return segs('health',[['koerper','Körper'],['knoechel','Knöchel'],['med','Medikamente'],['blut','Blutwerte'],['vert','Verträglichkeit']])+({koerper:hKoerper,knoechel:hKnoechel,med:hMed,blut:hBlut,vert:hVert})[ui.health]()}
 function mbForm(key,fk,fields,unitOf,label,btn){const f=ui[fk],arr=S[key];
  return `<details class="card" ${arr.length?'':'open'}><summary>${label}</summary><label class="lbl mt8">Datum<input type="date" class="txt" data-form="${fk}.date" value="${f.date}"></label><div class="grid2 mt8">${fields.map(n=>`<label class="fld"><span>${esc(n)}</span><div class="in"><input data-mb="${fk}" data-k="${esc(n)}" inputmode="decimal" value="${esc(f.vals[n]||'')}"><i>${esc(unitOf(n))}</i></div></label>`).join('')}</div><button class="primary" data-a="mbsave" data-k="${key}" data-f="${fk}">${btn}</button></details>`}
 function entryList(key,delA){const arr=S[key];return arr.length?`<section class="sec"><h3>Einträge</h3><div class="card list">${arr.map((x,i)=>({x,i})).reverse().slice(0,40).map(({x,i})=>`<div class="row"><span class="grow"><b>${fD(x.date)}</b><small>${Object.entries(x.vals).map(([k,v])=>`${esc(k)} ${dv(v)}`).join(', ')}</small></span><button class="ib sm" data-a="${delA}" data-i="${i}" aria-label="Eintrag löschen">✕</button></div>`).join('')}</div></section>`:''}
@@ -641,7 +684,8 @@ function hVert(){const f=ui.tform;
 /* ---------- Einstellungen ---------- */
 function vMehr(){const st=S.settings;
  return `<section class="sec" style="margin-top:6px"><h3>Backup</h3><div class="card"><p class="mut" style="margin-top:0">${st.lastBackup?`Letztes Backup am ${fD(st.lastBackup)}.`:'Noch kein Backup erstellt.'} Deine Daten liegen nur auf diesem Handy. Speicher das Backup in Google Drive, iCloud oder schick es dir selbst.</p><button class="primary" data-a="backup">Backup sichern</button><button class="ghost" data-a="imp">Backup oder Import laden</button><input type="file" id="imp" accept=".json,application/json" hidden>
- <div class="srow mt8"><span>Erinnerung nach Tagen</span><input class="txt num-s" data-setting="backupDays" inputmode="numeric" value="${st.backupDays}"></div><div class="srow"><span>Dauerhaft gespeichert</span><span id="persist" class="mut">…</span></div></div></section>
+ <div class="srow mt8"><span>Fotos mitsichern<small>Macht die Datei deutlich größer, je Foto etwa 150 bis 300 KB.</small></span><button class="tog ${st.bkPhotos?'on':''}" data-pm="bkph" aria-label="Fotos mitsichern"></button></div><div class="srow"><span>Erinnerung nach Tagen</span><input class="txt num-s" data-setting="backupDays" inputmode="numeric" value="${st.backupDays}"></div><div class="srow"><span>Dauerhaft gespeichert</span><span id="persist" class="mut">…</span></div></div></section>
+ ${medSettings()}
  <section class="sec"><h3>Training und Erinnerungen</h3><div class="card list"><div class="srow"><span>Standard-Steigerung in kg</span><input class="txt num-s" data-setting="inc" inputmode="decimal" value="${dv(st.inc)}"></div><div class="srow"><span>Abstand Messungen in Tagen</span><input class="txt num-s" data-setting="measureEvery" inputmode="numeric" value="${st.measureEvery}"></div><div class="srow"><span>Abstand Blutbilder in Tagen</span><input class="txt num-s" data-setting="bloodEvery" inputmode="numeric" value="${st.bloodEvery}"></div></div></section>
  <section class="sec"><h3>Namen der Vitalfelder</h3><div class="grid2">${st.labels.map((l,i)=>`<input class="txt" data-lbl="${i}" value="${esc(l)}">`).join('')}</div></section>
  ${[['supps','Supplements'],['tags','Tags'],['pre','Pre-Workout-Optionen'],['mfields','Messfelder']].map(([k,l])=>`<section class="sec"><h3>${l}</h3><textarea class="txt" rows="4" data-list="${k}">${esc(st[k].join('\n'))}</textarea></section>`).join('')}
@@ -705,13 +749,13 @@ function saveMB(key,fk,label){const f=ui[fk],vals={};Object.entries(f.vals).forE
  ui[fk]={date:todayStr(),vals:{}};save();render();toast(`${label} gespeichert`)}
 
 /* ---------- Backup und Import ---------- */
-async function exportBackup(){const name=`eisen-backup-${todayStr()}.json`,data=JSON.stringify({app:'eisen',v:1,exported:new Date().toISOString(),data:S});
+async function exportBackup(){const ph=S.settings.bkPhotos?(toast('Fotos werden verpackt'),await phExport()):null;const name=`eisen-backup-${todayStr()}${ph?'-mit-fotos':''}.json`,data=JSON.stringify(ph?{app:'eisen',v:1,exported:new Date().toISOString(),data:S,photoData:ph}:{app:'eisen',v:1,exported:new Date().toISOString(),data:S});
  const done=()=>{S.settings.lastBackup=todayStr();save();render();toast('Backup erstellt')};
  try{const file=new File([data],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});return done()}}catch(e){if(e&&e.name==='AbortError')return}
  if(DL){try{await DL.save({filename:name,data:data});return done()}catch(e){if(e&&e.code==='cancelled')return;toast('Backup abgebrochen');return}}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);done()}
-function readImport(file){const fr=new FileReader();fr.onload=()=>{try{const o=JSON.parse(fr.result),src=o.data||o;if(!src.days&&!src.sessions)throw 0;ui.pendingImport=src;
- openSheet(`<div class="sh-h"><h2>Daten laden</h2><button class="ib" data-a="close" aria-label="Schließen">✕</button></div><p>In der Datei: ${Object.keys(src.days||{}).length} Tage, ${(src.sessions||[]).length} Einheiten, ${(src.measures||[]).length} Messungen, ${(src.blood||[]).length} Blutbilder, ${(src.phases||[]).length} Phasen.</p><p class="mut">Zusammenführen ergänzt nur, was hier noch fehlt. Ersetzen überschreibt alles auf diesem Gerät.</p><button class="primary" data-a="impmerge">Zusammenführen</button><button class="ghost danger" data-a="impreplace">Alles ersetzen</button>`)}catch(e){toast('Datei nicht lesbar. Bitte eine Eisen-Datei wählen.')}};fr.readAsText(file)}
+function readImport(file){const fr=new FileReader();fr.onload=()=>{try{const o=JSON.parse(fr.result),src=o.data||o;if(!src.days&&!src.sessions)throw 0;ui.pendingImport=src;ui.pendingPhotos=o.photoData||null;
+ openSheet(`<div class="sh-h"><h2>Daten laden</h2><button class="ib" data-a="close" aria-label="Schließen">✕</button></div><p>In der Datei: ${Object.keys(src.days||{}).length} Tage, ${(src.sessions||[]).length} Einheiten, ${(src.measures||[]).length} Messungen, ${(src.blood||[]).length} Blutbilder, ${(src.phases||[]).length} Phasen${ui.pendingPhotos?`, ${Object.keys(ui.pendingPhotos).length} Fotos`:''}.</p><p class="mut">Zusammenführen ergänzt nur, was hier noch fehlt. Ersetzen überschreibt alles auf diesem Gerät.</p><button class="primary" data-a="impmerge">Zusammenführen</button><button class="ghost danger" data-a="impreplace">Alles ersetzen</button>`)}catch(e){toast('Datei nicht lesbar. Bitte eine Eisen-Datei wählen.')}};fr.readAsText(file)}
 function merge(src){
  Object.entries(src.days||{}).forEach(([d,r])=>{const t=S.days[d]||(S.days[d]={});Object.entries(r).forEach(([k,v])=>{if(t[k]==null||t[k]===''||(Array.isArray(t[k])&&!t[k].length))t[k]=v})});
  const ids=new Set(S.sessions.map(s=>s.id));(src.sessions||[]).forEach(s=>{if(!ids.has(s.id))S.sessions.push(s)});S.sessions.sort((a,b)=>a.date.localeCompare(b.date));
@@ -721,7 +765,7 @@ function merge(src){
  const ss=src.settings||{};['supps','tags','pre','mfields'].forEach(k=>(ss[k]||[]).forEach(v=>{if(!S.settings[k].includes(v))S.settings[k].push(v)}));
  (ss.markers||[]).forEach(m=>{if(!S.settings.markers.some(x=>x.n===m.n))S.settings.markers.push(m)});
  if(src.cycle&&src.cycle.hist){const hn=new Set(S.cycle.hist.map(h=>h.n));src.cycle.hist.forEach(h=>{if(!hn.has(h.n))S.cycle.hist.push(h)});S.cycle.hist.sort((a,b)=>a.n-b.n)}
- if(src.plan&&src.plan.days)src.plan.days.forEach(d=>d.ex.forEach(e=>{const pe=planExIn(d.name,e.name);if(pe&&!pe.setup&&e.setup)pe.setup=e.setup}))}
+ if(src.plan&&src.plan.days)src.plan.days.forEach(d=>d.ex.forEach(e=>{const pe=planExIn(d.name,e.name);if(pe&&!pe.setup&&e.setup)pe.setup=e.setup}));mergeExtra(src)}
 
 /* ---------- Aktionen ---------- */
 async function act(a,ds,el){const A=S.active;switch(a){
@@ -784,8 +828,8 @@ async function act(a,ds,el){const A=S.active;switch(a){
  case 'toldel':if(await askC('Eintrag löschen?')){S.tolerance.splice(+ds.i,1);save();render()}break;
  case 'backup':exportBackup();break;
  case 'imp':$('#imp').click();break;
- case 'impmerge':merge(ui.pendingImport);ui.pendingImport=null;save();closeSheet();toast('Daten zusammengeführt');break;
- case 'impreplace':if(await askC('Alle Daten auf diesem Gerät durch die Datei ersetzen?')){S=migrate(ui.pendingImport);ui.pendingImport=null;save();closeSheet();toast('Daten geladen')}break;
+ case 'impmerge':merge(ui.pendingImport);ui.pendingImport=null;await phImport();save();closeSheet();toast('Daten zusammengeführt');break;
+ case 'impreplace':if(await askC('Alle Daten auf diesem Gerät durch die Datei ersetzen?')){S=migrate(ui.pendingImport);ui.pendingImport=null;ankMigrate();await phImport();save();closeSheet();toast('Daten geladen')}break;
  case 'persist':if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(()=>persistStatus());break;
  case 'reset':if(await askC('Wirklich alle Daten löschen?')&&await askC('Sicher? Ohne Backup ist alles weg.')){S=fresh();save();go('heute')}break;
 }}
@@ -887,7 +931,9 @@ async function cloudPush(){
 function cloudSave(){if(!ADB)return;clearTimeout(cloudT);cloudT=setTimeout(cloudPush,1500)}
 
 /* ---------- Fotos ---------- */
-const POSES=['Front entspannt','Front angespannt','Seite','Rücken','Beine'];
+const POSES_NEU=['Knöchel links seitlich','Knöchel rechts seitlich','Körper vorne','Körper seitlich','Körper hinten'];
+const POSES_ALT=['Front entspannt','Front angespannt','Seite','Rücken','Beine'];
+function poseList(){return POSES_NEU.concat(POSES_ALT.filter(p=>(S.photos||[]).some(x=>x.pose===p)))}
 function phUrl(p){
  if(p.asset)return '/_blob/'+p.asset;
  if(PURL[p.id])return PURL[p.id];
@@ -905,10 +951,10 @@ async function phHydrate(){
 function shrink(file){
  return new Promise((res,rej)=>{
   const u=URL.createObjectURL(file),im=new Image();
-  im.onload=()=>{const sc=Math.min(1,1600/Math.max(im.width,im.height));
+  im.onload=()=>{const sc=Math.min(1,1080/Math.max(im.width,im.height));
    const c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
-   c.toBlob(b=>b?res(b):rej(new Error('encode')),'image/jpeg',.86)};
+   c.toBlob(b=>b?res(b):rej(new Error('encode')),'image/jpeg',.7)};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('decode'))};
   im.src=u;
  });
@@ -946,17 +992,17 @@ async function phDel(id){
 function phSheet(){
  openSheet(`<div class="sh-h"><h3>Fotos hinzufügen</h3><button class="ib sm" data-pa="close">✕</button></div>
   <label class="lbl">Datum<input class="txt" type="date" id="phdate" value="${ui.pdate||todayStr()}"></label>
-  <div class="mt8"><span class="lbl">Pose</span><div class="chips mt8">${POSES.map(p=>
-    `<button class="chip ${ (ui.ppose||POSES[0])===p?'on':''}" data-pa="pose" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
+  <div class="mt8"><span class="lbl">Pose</span><div class="chips mt8">${poseList().map(p=>
+    `<button class="chip ${ (ui.ppose||poseList()[0])===p?'on':''}" data-pa="pose" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
   <label class="phdrop" for="phfile">Aus der Galerie oder Kamera wählen<input id="phfile" type="file" accept="image/*" multiple hidden></label>
-  <p class="hint">Bilder werden auf 1600 px verkleinert. Gewicht und KFA des Tages werden automatisch mitgespeichert.
-   ${AS?'Sie liegen im Artefaktspeicher und sind auf allen Geräten da.':'Sie liegen auf diesem Gerät und wandern nicht ins Backup.'}</p>`);
+  <p class="hint">Bilder werden auf 1080 px an der langen Seite verkleinert und als JPEG mit Qualität 0,7 gespeichert. Gewicht und KFA des Tages werden automatisch mitgespeichert.
+   ${AS?'Sie liegen im Artefaktspeicher und sind auf allen Geräten da.':'Sie liegen auf diesem Gerät. Ins Backup kommen sie nur, wenn in den Einstellungen „Fotos mitsichern“ an ist.'}</p>`);
 }
 function pFotos(){
  const ph=(S.photos||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
  if(!ph.length)return `<p class="empty">Noch keine Fotos. Für einen Vergleich brauchst du zwei Termine in derselben Pose, gleiche Haltung, gleiches Licht, gleiche Tageszeit.</p>
   <button class="ghost" data-pa="sheet">Fotos hinzufügen</button>`;
- const poses=POSES.filter(p=>ph.some(x=>x.pose===p));
+ const poses=poseList().filter(p=>ph.some(x=>x.pose===p));
  if(!ui.ppose||!poses.includes(ui.ppose))ui.ppose=poses[0];
  const list=ph.filter(p=>p.pose===ui.ppose);
  if(!list.some(p=>p.id===ui.pa))ui.pa=list[0]?list[0].id:null;
@@ -981,9 +1027,9 @@ function pFotos(){
    <div class="trend"><div><small>Abstand</small><b>${dd}</b><em>Tage, ${fmt(dd/7,1)} Wochen</em></div>
     <div><small>Gewicht</small><b>${dw==null?'–':sg(dw,1)}</b><em>kg</em></div>
     <div><small>KFA</small><b>${dk==null?da('KFA %'):sg(dk,1)}</b><em>%</em></div></div>
-   <div class="trend" style="margin-top:8px"><div><small>Arm rechts</small><b>${da('Arm rechts')}</b><em>cm</em></div>
+   ${/^Knöchel/.test(ui.ppose)?ankPhStats(A,B):`<div class="trend" style="margin-top:8px"><div><small>Arm rechts</small><b>${da('Arm rechts')}</b><em>cm</em></div>
     <div><small>Taille</small><b>${da(S.settings.mfields.find(f=>/Tai/i.test(f))||'Taille (Nabel)')}</b><em>cm</em></div>
-    <div><small>Brust</small><b>${da('Brust')}</b><em>cm</em></div></div>
+    <div><small>Brust</small><b>${da('Brust')}</b><em>cm</em></div></div>`}
    <button class="link mt8" data-pa="wipe">${ui.pwipe?'Nebeneinander zeigen':'Überblenden'}</button></div>`;
  }else h+=`<p class="empty">Für diese Pose gibt es erst ein Foto. Ab dem zweiten vergleicht die App automatisch.</p>`;
  h+=`<div class="sec"><h3>Alle Fotos, ${esc(ui.ppose)}</h3><div class="phgrid">${list.slice().reverse().map(p=>
@@ -1108,7 +1154,7 @@ document.addEventListener('change',e=>{
   return;
  }
  if(e.target.id==='phfile'&&e.target.files&&e.target.files.length){
-  const d=($('#phdate')&&$('#phdate').value)||todayStr(),p=ui.ppose||POSES[0];
+  const d=($('#phdate')&&$('#phdate').value)||todayStr(),p=ui.ppose||poseList()[0];
   const files=[...e.target.files];e.target.value='';
   closeSheet();phAdd(files,d,p);
  }
@@ -1837,7 +1883,7 @@ function cmpFmt(row,v,isAvg){
  if(Array.isArray(v))return Math.round(v[0])+(isAvg?'/':'<br>')+Math.round(v[1]);
  if(k==='steps')return v>=1000?fmt(v/1000,1)+'k':fmt(v,0);
  if(k==='kcal')return String(Math.round(v));
- if(k==='stool'&&!isAvg)return fmt(v,0);
+ if((k==='stool'||k==='ankle')&&!isAvg)return fmt(v,0);
  return fmt(v,row[3]);
 }
 function cmpDelta(row,a,b){
@@ -2134,11 +2180,423 @@ render=function(){_render.apply(null,arguments);
 };
 
 /* ---------- Start ---------- */
+
+/* ==================== Knöchel, Fotos und Medikamente ====================
+   Knöchel: Skala 0 bis 3 abends, Morgen-Check, Umfang morgens und abends.
+   Medikamente: Plan in Versionen mit Startdatum, tägliches Abhaken, Abweichungen.
+   Alles liegt in S und damit im JSON-Backup. Im Code steht kein persönlicher Plan. */
+
+/* ---------- Knöchel-Skala ---------- */
+const ANK=[
+ {k:0,t:'nichts',d:'Nichts, keine Sockenränder.',c:'ok'},
+ {k:1,t:'Sockenrand',d:'Leichte Sockenränder, keine Delle.',c:'ok'},
+ {k:2,t:'Delle kurz',d:'Deutliche Sockenränder, leichte Delle, verschwindet in unter 10 Sekunden.',c:'warn'},
+ {k:3,t:'Delle tief',d:'Tiefe Delle, bleibt länger, sichtbar dicker.',c:'bad'}];
+const ANKF=['Knöchel rechts morgens','Knöchel rechts abends'];
+function ankMigrate(){
+ if(!S||!S.settings||S.settings.ankV)return false;
+ ANKF.forEach(f=>{if(!S.settings.mfields.includes(f))S.settings.mfields.push(f)});
+ if(!S.meds)S.meds={v:[]};
+ S.settings.ankV=1;return true;
+}
+function ankVal(d){const r=S.days[d];return r?num(r.ankle):null}
+function ankWarn(d){
+ const r=S.days[d]||{},out=[];
+ if(num(r.ankleAM)===1)out.push('Morgens sichtbare Schwellung');
+ if(ankVal(d)===3&&ankVal(addDays(d,-1))===3)out.push('Zwei Tage in Folge Stufe 3');
+ return out;
+}
+function ankWarnBox(list,d){
+ if(!list.length)return '';
+ return `<div class="kwarn"><b>${esc(list.join(' und '))}${d?`, ${d===todayStr()?'heute':fD(d)}`:''}</b>
+  <span>Lass das ärztlich anschauen. Nicht abwarten, wenn nur eine Seite dick ist und die Wade schmerzt,
+  wenn du kurzatmig bist oder das Gewicht in zwei bis drei Tagen um mehr als ein Kilo steigt.</span></div>`;
+}
+function ankWarnTop(d){
+ let w=ankWarn(d),wd=d;
+ if(!w.length&&d===todayStr()){wd=addDays(d,-1);w=ankWarn(wd)}
+ return ankWarnBox(w,wd);
+}
+function ankleSection(d){
+ const r=S.days[d]||{},v=num(r.ankle),am=num(r.ankleAM),sel=ANK.find(x=>x.k===v);
+ return `<section class="sec" id="anksec"><h3>Knöchel</h3>
+  <div class="card list"><div class="srow"><span>Morgens Schwellung sichtbar?</span><div class="chips">
+   <button class="chip ${am===0?'on':''}" data-pm="ankam" data-v="0">Nein</button>
+   <button class="chip ${am===1?'on':''}" data-pm="ankam" data-v="1">Ja</button></div></div></div>
+  <h3 class="mt16">Abends, Skala 0 bis 3</h3>
+  <div class="stgrid">${ANK.map(x=>`<button class="stb ${v===x.k?'on '+x.c:''}" data-pm="ank" data-v="${x.k}"
+   aria-label="Stufe ${x.k}, ${esc(x.d)}"><b class="ankn">${x.k}</b><span>${x.t}</span></button>`).join('')}</div>
+  ${sel?`<p class="stdesc ${sel.c}">${esc(sel.d)}</p>`:''}
+  <p class="hint">Drucktest: 5 s mit dem Daumen über dem Knöchel drücken, loslassen, schauen ob eine Delle bleibt.</p></section>`;
+}
+/* Mittwoch und Samstag: Umfang und Fotos */
+function kwDue(d){
+ const t=todayStr();if(d!==t)return '';
+ const wd=pd(t).getDay();if(wd!==3&&wd!==6)return '';
+ const m=S.measures.find(x=>x.date===t),has=f=>!!(m&&m.vals&&m.vals[f]!=null),o=[];
+ if(!has(ANKF[0]))o.push('Knöchelumfang morgens');
+ if(new Date().getHours()>=16&&!has(ANKF[1]))o.push('Knöchelumfang abends');
+ const ph=(S.photos||[]).filter(p=>p.date===t);
+ if(!ph.some(p=>/^Knöchel/.test(p.pose)))o.push('Knöchelfotos');
+ if(wd===6&&!ph.some(p=>/^Körper/.test(p.pose)))o.push('Körperfotos');
+ return o.length?`<button class="note-line" data-a="gohealth" data-v="knoechel">${wd===3?'Mittwoch':'Samstag'}: ${o.join(', ')}</button>`:'';
+}
+
+/* ---------- Medikamente ---------- */
+const AMTS=['1/12','1/8','1/6','1/4','1/2','1','2','3'];
+const ROUTES=['sublingual','geschluckt'];
+const FORMS=['Tablette','Kapsel','Tropfen'];
+const frac=a=>{if(a==null||a==='')return null;const m=String(a).match(/^(\d+)\/(\d+)$/);return m?(+m[1])/(+m[2]):num(a)};
+const nowHM=()=>{const n=new Date();return p2(n.getHours())+':'+p2(n.getMinutes())};
+const hmMin=t=>{const m=String(t||'').match(/^(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):null};
+function medVers(){return ((S.meds&&S.meds.v)||[]).slice().sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0)}
+function medPlanFor(d){let p=null;medVers().forEach(v=>{if(v.from<=d)p=v});return p}
+function doseUg(it,amt){const f=frac(amt),s=num(it&&it.str);
+ if(f==null||s==null)return null;
+ if(it.unit==='µg')return f*s;if(it.unit==='mg')return f*s*1000;return null}
+function planUg(v){let s=0;if(v)v.items.forEach(it=>it.doses.forEach(x=>{const u=doseUg(it,x.amt);if(u!=null)s+=u}));return Math.round(s*1000)/1000}
+function stueck(it,amt){const f=frac(amt),fm=it.form||'Tablette';
+ if(f!=null&&f>1)return amt+' '+(fm==='Kapsel'?'Kapseln':fm==='Tablette'?'Tabletten':fm);
+ return amt+' '+fm}
+const fmtUg=u=>u==null?'':fmt(u,Math.abs(u-Math.round(u))<.005?0:1)+' µg';
+function amtTxt(it,amt){const u=doseUg(it,amt);return stueck(it,amt)+(u!=null?' · '+fmtUg(u):'')}
+function medRows(d){const v=medPlanFor(d);if(!v)return [];const out=[];
+ v.items.forEach(it=>it.doses.forEach(x=>out.push({it,x})));
+ return out.sort((a,b)=>(hmMin(a.x.t)??0)-(hmMin(b.x.t)??0))}
+function medLog(d){const r=S.days[d];return (r&&r.med)||{}}
+function medRecalc(d){
+ const r=dayRec(d),L=r.med||{},v=medPlanFor(d);let ug=0,any=false;
+ if(v)v.items.forEach(it=>it.doses.forEach(x=>{const e=L[x.id];if(!e)return;any=true;
+  if(e.s!=='ok')return;const u=doseUg(it,e.amt||x.amt);if(u!=null)ug+=u}));
+ if(r.med&&!Object.keys(r.med).length)delete r.med;
+ if(any&&v&&planUg(v)>0)r.medug=Math.round(ug*100)/100;else delete r.medug;
+ if(!Object.keys(r).length)delete S.days[d];
+}
+function medDev(e,o){
+ if(!e||e.s!=='ok')return false;
+ const dt=Math.abs((hmMin(e.t)??0)-(hmMin(o.x.t)??0));
+ return !!((e.amt&&e.amt!==o.x.amt)||(e.route&&e.route!==o.it.route)||e.note||dt>30);
+}
+function medDue(d){
+ if(d!==todayStr())return '';
+ const L=medLog(d),now=hmMin(nowHM()),open=medRows(d).filter(o=>!L[o.x.id]&&(hmMin(o.x.t)??0)<=now);
+ if(!open.length)return '';
+ return `<button class="note-line mdue" data-pm="mjump">Noch nicht abgehakt: ${open.map(o=>esc(o.it.name)+' '+o.x.t).join(', ')}</button>`;
+}
+function medSection(d){
+ const rows=medRows(d);if(!rows.length)return '';
+ const L=medLog(d),r=S.days[d]||{},isT=d===todayStr(),now=hmMin(nowHM()),v=medPlanFor(d),pu=planUg(v);
+ const done=rows.filter(o=>L[o.x.id]).length;
+ const nx=isT?rows.find(o=>!L[o.x.id]&&(hmMin(o.x.t)??0)>now):null;
+ let h=`<section class="sec" id="medsec"><div class="sec-h"><h3>Medikamente</h3>
+  <span class="mut">${pu?(r.medug!=null?fmtUg(r.medug)+' von '+fmtUg(pu):fmtUg(pu)+' geplant'):''}</span></div><div class="card list">`;
+ rows.forEach(o=>{
+  const {it,x}=o,e=L[x.id]||{},st=e.s||'',amt=e.amt||x.amt,route=e.route||it.route||'',t=e.t||x.t;
+  const due=isT&&!st&&(hmMin(x.t)??0)<=now;
+  const info=st==='ok'?`genommen ${esc(t)}${t!==x.t?` · Plan ${x.t}`:''}`:st==='skip'?`ausgelassen · Plan ${x.t}`:(due?`fällig seit ${x.t}`:`geplant ${x.t}`);
+  h+=`<div class="mrow ${st}${due?' due':''}">
+   <button class="mchk" data-pm="mtog" data-v="${x.id}" aria-label="${esc(it.name)} ${x.t} ${st==='ok'?'zurücknehmen':'abhaken'}">${st==='ok'?'✓':st==='skip'?'–':''}</button>
+   <button class="mtx" data-pm="mdet" data-v="${x.id}"><b>${esc(it.name)} <em>${esc(amtTxt(it,amt))}</em></b>
+    <small>${info}${route?' · '+esc(route):''}${e.note?' · '+esc(e.note):''}${medDev(e,o)?' · <i class="mdev">abweichend</i>':''}</small></button>
+   <button class="ib sm" data-pm="mdet" data-v="${x.id}" aria-label="Abweichung oder Auslassen eintragen">⋯</button></div>`;
+ });
+ h+=`</div>${done<rows.length?'<button class="ghost" data-pm="mall">Alle wie geplant</button>':''}
+  <p class="hint">${nx?`Nächste: ${esc(nx.it.name)} um ${nx.x.t}. `:''}Der Haken setzt ${isT?'die Uhrzeit von jetzt':'die geplante Uhrzeit'}. Abweichungen und Auslassen über ⋯.</p></section>`;
+ return h;
+}
+function medDetSheet(d,id){
+ const o=medRows(d).find(o=>o.x.id===id);if(!o)return;
+ const e=medLog(d)[id]||{},{it,x}=o;ui.mdet={d,id};
+ openSheet(`<div class="sh-h"><h2>${esc(it.name)}, ${x.t}</h2><button class="ib" data-pm="close" aria-label="Schließen">✕</button></div>
+  <p class="mut" style="margin-top:0">Plan: ${esc(amtTxt(it,x.amt))}, ${esc(it.route||'')}, ${x.t}</p>
+  <div class="grid2"><label class="lbl">Uhrzeit<input class="txt" type="time" id="mdt" value="${esc(e.t||x.t)}"></label>
+  <label class="lbl">Menge<select class="txt" id="mda">${AMTS.map(a=>`<option ${(e.amt||x.amt)===a?'selected':''}>${a}</option>`).join('')}</select></label></div>
+  <label class="lbl mt8">Einnahmeart<select class="txt" id="mdr">${ROUTES.map(r=>`<option ${(e.route||it.route)===r?'selected':''}>${r}</option>`).join('')}</select></label>
+  <label class="lbl mt8">Notiz<input class="txt" id="mdn" value="${esc(e.note||'')}" placeholder="z. B. Milchprodukt vor 1,5 h"></label>
+  <button class="primary" data-pm="msave">Als genommen speichern</button>
+  <button class="ghost" data-pm="mskip">Ausgelassen</button>
+  ${e.s?'<button class="link danger mt8" data-pm="mclr">Eintrag zurücksetzen</button>':''}`);
+}
+
+/* Planübersicht */
+function medPlanTxt(v){
+ if(!v)return '';
+ const pu=planUg(v);
+ return `<p class="mut" style="margin-top:0">${v.from>todayStr()?'Gilt ab':'Seit'} ${fD(v.from)}${pu?`, ${fmtUg(pu)} pro Tag`:''}</p>`
+  +v.items.map(it=>`<div class="mplan"><b>${esc(it.name)}</b><small>${num(it.str)!=null?fmt(num(it.str),num(it.str)%1?1:0)+' '+esc(it.unit||'')+' je '+esc(it.form||'Tablette')+', ':''}${esc(it.route||'')}</small>
+   ${it.doses.slice().sort((a,b)=>(hmMin(a.t)??0)-(hmMin(b.t)??0)).map(x=>`<span>${x.t} · ${esc(amtTxt(it,x.amt))}</span>`).join('')}</div>`).join('');
+}
+function medSettings(){
+ const V=medVers(),cur=medPlanFor(todayStr())||last(V);
+ return `<section class="sec"><h3>Medikamentenplan</h3><div class="card">
+  ${cur?medPlanTxt(cur):'<p class="mut" style="margin-top:0">Noch kein Plan angelegt.</p>'}
+  <button class="primary" data-pm="medplan">${V.length?'Plan ändern':'Plan anlegen'}</button>
+  ${V.length?`<div class="mt16">${V.slice().reverse().map(v=>{const nx=V[V.indexOf(v)+1];
+   const zr=v.from>todayStr()?`ab ${fD(v.from)}`:`${fD(v.from)} bis ${nx?fD(addDays(nx.from,-1)):'heute'}`;
+   return `<div class="srow"><span>${zr}<small>${planUg(v)?fmtUg(planUg(v))+' pro Tag, ':''}${v.items.map(it=>esc(it.name)).join(', ')}</small></span>
+    <button class="ib sm" data-pm="mvdel" data-v="${v.id}" aria-label="Version löschen">✕</button></div>`}).join('')}</div>
+   <p class="hint">Bei einer Änderung bleibt der alte Plan mit seinem Zeitraum gespeichert. So ist jeder Tag der Dosis zugeordnet, die damals galt.</p>`:''}
+ </div></section>`;
+}
+
+/* Planeditor im Blatt */
+function medEdNew(){
+ const cur=last(medVers());
+ const items=cur?JSON.parse(JSON.stringify(cur.items)):[{id:uid(),name:'',str:null,unit:'µg',form:'Tablette',route:'sublingual',doses:[{id:uid(),t:'08:00',amt:'1'}]}];
+ ui.medEd={from:todayStr(),items,txt:''};
+}
+function medEdHtml(){
+ const E=ui.medEd,tot={it:0};
+ let h=`<div class="sh-h"><h2>Medikamentenplan</h2><button class="ib" data-pm="close" aria-label="Schließen">✕</button></div>
+  <label class="lbl">Gültig ab<input class="txt" type="date" data-mx="from" value="${esc(E.from)}"></label>
+  <p class="hint">Ein neues Datum legt eine neue Version an, der bisherige Plan bleibt mit seinem Zeitraum erhalten. Dasselbe Datum wie eine bestehende Version überschreibt diese.</p>`;
+ E.items.forEach((it,i)=>{
+  const sum=it.doses.reduce((s,x)=>{const u=doseUg(it,x.amt);return u==null?s:s+u},0);
+  h+=`<div class="card mt16 medit">
+   <div class="grid2"><label class="lbl">Name<input class="txt" data-mx="i.${i}.name" value="${esc(it.name)}" placeholder="z. B. T3"></label>
+    <label class="lbl">Form<select class="txt" data-mx="i.${i}.form">${FORMS.map(f=>`<option ${it.form===f?'selected':''}>${f}</option>`).join('')}</select></label></div>
+   <div class="grid2 mt8"><label class="lbl">Stärke je Stück<input class="txt" data-mx="i.${i}.str" inputmode="decimal" value="${esc(dv(it.str))}" placeholder="unbekannt"></label>
+    <label class="lbl">Einheit<select class="txt" data-mx="i.${i}.unit">${[['µg','µg'],['mg','mg'],['','ohne']].map(([u,l])=>`<option value="${u}" ${(it.unit||'')===u?'selected':''}>${l}</option>`).join('')}</select></label></div>
+   <label class="lbl mt8">Einnahmeart<select class="txt" data-mx="i.${i}.route">${ROUTES.map(r=>`<option ${it.route===r?'selected':''}>${r}</option>`).join('')}</select></label>
+   <span class="lbl mt16">Einnahmen</span>
+   ${it.doses.map((x,j)=>{const u=doseUg(it,x.amt);return `<div class="mdose">
+    <input class="txt" type="time" data-mx="i.${i}.d.${j}.t" value="${esc(x.t)}" aria-label="Uhrzeit">
+    <select class="txt" data-mx="i.${i}.d.${j}.amt" aria-label="Menge">${AMTS.map(a=>`<option ${x.amt===a?'selected':''}>${a}</option>`).join('')}</select>
+    <span class="mug">${u!=null?fmtUg(u):''}</span>
+    <button class="ib sm" data-pm="mxdd" data-v="${i}.${j}" aria-label="Einnahme entfernen">✕</button></div>`}).join('')}
+   <button class="link mt8" data-pm="mxad" data-v="${i}">+ Einnahme</button>
+   ${sum?`<p class="hint">Summe ${fmtUg(sum)} pro Tag.</p>`:''}
+   <button class="link danger mt8" data-pm="mxdi" data-v="${i}">Medikament entfernen</button></div>`;
+ });
+ const all=E.items.reduce((s,it)=>s+it.doses.reduce((t,x)=>{const u=doseUg(it,x.amt);return u==null?t:t+u},0),0);
+ h+=`<button class="ghost" data-pm="mxai">+ Medikament</button>
+  ${all?`<p class="hint">Gesamt ${fmtUg(all)} pro Tag.</p>`:''}
+  <details class="card mt16"><summary>Plan als Text einfügen</summary>
+   <p class="hint">Eine Zeile pro Medikament: Name | Stärke und Form | Einnahmeart | Uhrzeit Menge, Uhrzeit Menge.
+   Beispiel: <i>Name | 25 µg Tablette | sublingual | 08:00 1/2, 14:00 1/4</i> oder <i>Name | Kapsel | geschluckt | 08:00 2</i></p>
+   <textarea class="txt mt8" rows="4" data-mx="txt">${esc(E.txt||'')}</textarea>
+   <button class="ghost" data-pm="mxtxt">Text übernehmen</button></details>
+  <button class="primary" data-pm="mxsave">Plan speichern</button>`;
+ return h;
+}
+function medEdRender(){const c=$('#sheetc');if(!c)return;const y=c.scrollTop;c.innerHTML=medEdHtml();c.scrollTop=y}
+function medEdSet(path,val){
+ const E=ui.medEd;if(!E)return;
+ if(path==='from'||path==='txt'){E[path]=val;return}
+ const p=path.split('.');const it=E.items[+p[1]];if(!it)return;
+ if(p[2]==='d'){const x=it.doses[+p[3]];if(x)x[p[4]]=val;return}
+ it[p[2]]=p[2]==='str'?num(val):val;
+}
+function medParse(txt){
+ const out=[];
+ String(txt||'').split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+  const q=l.split('|').map(x=>x.trim());if(q.length<4)return;
+  const it={id:uid(),name:q[0],str:null,unit:'',form:'Tablette',route:/subl/i.test(q[2])?'sublingual':'geschluckt',doses:[]};
+  const m=q[1].match(/^([\d.,]+)\s*(µg|ug|mcg|mg)\s*(\S+)?/i);
+  if(m){it.str=num(m[1]);it.unit=/mg/i.test(m[2])?'mg':'µg';if(m[3])it.form=m[3]}else if(q[1])it.form=q[1];
+  q[3].split(',').forEach(z=>{const k=z.trim().match(/^(\d{1,2}:\d{2})\s+(\S+)$/);
+   if(k&&AMTS.includes(k[2]))it.doses.push({id:uid(),t:k[1].padStart(5,'0'),amt:k[2]})});
+  if(it.name&&it.doses.length)out.push(it);
+ });
+ return out;
+}
+function medEdSave(){
+ const E=ui.medEd;if(!E)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(E.from||''))return toast('Datum fehlt');
+ const items=E.items.map(it=>({id:it.id||uid(),name:String(it.name||'').trim(),str:num(it.str),unit:it.unit||'',form:it.form||'Tablette',route:it.route||'geschluckt',
+  doses:it.doses.filter(x=>hmMin(x.t)!=null&&frac(x.amt)!=null).map(x=>({id:x.id||uid(),t:x.t,amt:x.amt}))}))
+  .filter(it=>it.name&&it.doses.length);
+ if(!items.length)return toast('Mindestens ein Medikament mit Name und Einnahme');
+ if(!S.meds)S.meds={v:[]};
+ const ex=S.meds.v.find(v=>v.from===E.from);
+ if(ex)ex.items=items;else S.meds.v.push({id:uid(),from:E.from,items});
+ S.meds.v.sort((a,b)=>a.from<b.from?-1:1);
+ Object.keys(S.days).forEach(d=>{if(S.days[d].med)medRecalc(d)});
+ ui.medEd=null;save();closeSheet();toast(ex?'Plan ab '+fD(E.from)+' überschrieben':'Plan ab '+fD(E.from)+' gespeichert');
+}
+
+/* Dosis als Stufenlinie über anderen Verläufen */
+function doseOv(){
+ const V=medVers().filter(v=>planUg(v)>0);if(!V.length)return null;
+ return {steps:V.map(v=>[v.from,planUg(v)]),dots:series('medug'),color:'#FF5A1F'};
+}
+function ovHint(k){
+ if(!['hr1','t1','ankle'].includes(k)||!doseOv())return '';
+ return '<p class="hint"><span class="ovk"></span> Orange gestrichelt: Gesamtdosis laut Plan, orange Punkte: abgehakte Tagessumme, beides in µg auf der rechten Achse.</p>';
+}
+const ANKY={y0:-.25,y1:3.25,ticks:[0,1,2,3],dec:0};
+
+/* ---------- Health: Knöchel ---------- */
+function hKnoechel(){
+ ankMigrate();
+ let h='';
+ const wl=[];for(let i=0;i<14;i++){const d=addDays(todayStr(),-i),w=ankWarn(d);if(w.length)wl.push([d,w])}
+ if(wl.length)h+=ankWarnBox(wl[0][1],wl[0][0])+(wl.length>1?`<p class="hint" style="margin-top:0">In den letzten 14 Tagen an ${wl.length} Tagen ein Warnhinweis.</p>`:'');
+ const all=series('ankle'),wk={};
+ all.forEach(([d,v])=>{const m=monday(d);(wk[m]=wk[m]||[]).push(v)});
+ const c=cutoff(),wpts=Object.keys(wk).sort().map(m=>[addDays(m,3),avg(wk[m])]).filter(p=>p[0]>=c);
+ h+=`<section class="sec" style="margin-top:6px"><h3>Skala im Wochenschnitt</h3>${ranges()}<div class="card">
+  ${chartSVG([{pts:wpts,color:C.chalk,dots:true,r:3.4,op:1,w:2.2}],Object.assign({label:'Knöchel-Skala im Wochenschnitt',ov:doseOv(),
+   empty:'Für den Wochenschnitt braucht es Einträge aus mindestens zwei Wochen.'},ANKY))}${ovHint('ankle')}</div>`;
+ const W=[];for(let i=0;i<8;i++)W.push(addDays(monday(todayStr()),-7*i));
+ const rows=W.map(m=>{const ds=daysIn(m,addDays(m,6)),v=ds.map(ankVal).filter(x=>x!=null);
+  const am=ds.filter(d=>num((S.days[d]||{}).ankleAM)===1).length,s3=v.filter(x=>x===3).length;
+  const mu=ds.map(d=>num((S.days[d]||{}).medug)).filter(x=>x!=null);
+  return {m,n:v.length,a:avg(v),s3,am,mu:mu.length?avg(mu):null}}).filter(r=>r.n||r.am);
+ if(rows.length)h+=`<div class="card mt8"><table class="t"><thead><tr><th>KW</th><th>Ø Skala</th><th>Stufe 3</th><th>morgens dick</th><th>Ø Dosis</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${isoWeek(r.m)}<small>${fDs(r.m)}</small></td><td>${fmt(r.a,1)}<small>${r.n} Tage</small></td>
+   <td class="${r.s3?'ref-hart-hi':''}">${r.s3}</td><td class="${r.am?'ref-hart-hi':''}">${r.am}</td><td>${r.mu!=null?fmtUg(r.mu):'–'}</td></tr>`).join('')}</tbody></table></div>`;
+ h+='</section>';
+ /* Umfang */
+ const kd=ui.kdate||todayStr(),me=S.measures.find(x=>x.date===kd),gv=f=>me&&me.vals[f]!=null?dv(me.vals[f]):'';
+ const both=S.measures.filter(x=>x.vals[ANKF[0]]!=null&&x.vals[ANKF[1]]!=null).map(x=>({d:x.date,m:num(x.vals[ANKF[0]]),a:num(x.vals[ANKF[1]])}));
+ const lastB=last(both);
+ h+=`<section class="sec"><h3>Knöchelumfang rechts</h3><div class="card">
+  <label class="lbl">Datum<input class="txt" type="date" data-ka="date" value="${kd}"></label>
+  <div class="grid2 mt8"><label class="fld"><span>Morgens</span><div class="in"><input data-ka="${esc(ANKF[0])}" inputmode="decimal" autocomplete="off" value="${gv(ANKF[0])}"><i>cm</i></div></label>
+   <label class="fld"><span>Abends</span><div class="in"><input data-ka="${esc(ANKF[1])}" inputmode="decimal" autocomplete="off" value="${gv(ANKF[1])}"><i>cm</i></div></label></div>
+  <p class="hint">Schmalste Stelle über dem Knöchel, jedes Mal dieselbe Stelle, Maßband ohne Zug. Mittwoch und Samstag, morgens direkt nach dem Aufstehen und abends vor dem Schlafen.</p>
+  ${lastB?`<div class="trend"><div><small>Abends − morgens</small><b>${sg(lastB.a-lastB.m,1)}</b><em>cm am ${fDs(lastB.d)}</em></div>
+   <div><small>Morgens</small><b>${fmt(lastB.m,1)}</b><em>cm</em></div><div><small>Abends</small><b>${fmt(lastB.a,1)}</b><em>cm</em></div></div>`:''}
+  ${both.length>1?chartSVG([{pts:both.map(x=>[x.d,x.a-x.m]),color:C.blue,dots:true,r:3.2,op:1,w:2.2}],{label:'Differenz abends minus morgens',h:160})
+   +'<p class="hint">Differenz abends minus morgens in cm. Steigt sie über Wochen, sammelt sich tagsüber mehr Wasser in den Beinen.</p>'
+   :'<p class="hint">Der Verlauf der Differenz erscheint ab zwei Tagen mit beiden Werten.</p>'}
+  ${both.length?`<table class="t mt8"><thead><tr><th>Datum</th><th>morgens</th><th>abends</th><th>Differenz</th></tr></thead><tbody>
+   ${both.slice(-8).reverse().map(x=>`<tr><td>${fD(x.d)}</td><td>${fmt(x.m,1)}</td><td>${fmt(x.a,1)}</td><td>${sg(x.a-x.m,1)}</td></tr>`).join('')}</tbody></table>`:''}
+ </div></section>`;
+ /* Fotos */
+ const kp=(S.photos||[]).filter(p=>/^Knöchel/.test(p.pose)).length;
+ h+=`<section class="sec"><h3>Fotos</h3><div class="card"><p class="mut" style="margin-top:0">Mittwoch und Samstag beide Knöchel von der Seite, samstags dazu Körper vorne, seitlich und hinten. Gleiches Licht, gleiche Uhrzeit, gleicher Abstand.${kp?` Bisher ${kp} Knöchelfotos.`:''}</p>
+  <button class="primary" data-pm="phk" data-v="Knöchel links seitlich">Knöchelfotos hinzufügen</button>
+  ${kp?'<button class="ghost" data-pm="phv" data-v="Knöchel links seitlich">Vergleich ansehen</button>':''}</div></section>`;
+ return h;
+}
+
+/* ---------- Health: Medikamente ---------- */
+function hMed(){
+ const V=medVers();
+ if(!V.length)return `<p class="empty">Noch kein Medikamentenplan. Leg ihn hier oder in den Einstellungen an. Danach kannst du jeden Tag im Tageslog abhaken.</p><button class="ghost" data-pm="medplan">Plan anlegen</button>`;
+ const cur=medPlanFor(todayStr())||last(V),t=todayStr(),now=hmMin(nowHM());
+ let pl=0,ok=0,sk=0,dev=0;
+ for(let i=0;i<14;i++){const d=addDays(t,-i),L=medLog(d);
+  medRows(d).forEach(o=>{if(i===0&&(hmMin(o.x.t)??0)>now)return;pl++;const e=L[o.x.id];if(!e)return;if(e.s==='ok'){ok++;if(medDev(e,o))dev++}else sk++})}
+ let h=`<section class="sec" style="margin-top:6px"><h3>Aktueller Plan</h3><div class="card">${medPlanTxt(cur)}<button class="ghost" data-pm="medplan">Plan ändern</button></div></section>`;
+ h+=`<section class="sec"><h3>Letzte 14 Tage</h3><div class="trend" style="margin-top:0"><div><small>Abgehakt</small><b>${ok}</b><em>von ${pl} fälligen</em></div>
+  <div><small>Ausgelassen</small><b>${sk}</b><em>Einnahmen</em></div><div><small>Abweichend</small><b>${dev}</b><em>Zeit, Menge, Art, Notiz</em></div></div></section>`;
+ h+=`<section class="sec"><h3>Dosis über Ruhepuls, Temperatur und Knöchel</h3>${ranges()}`;
+ const L=S.settings.labels,c=cutoff();
+ [['hr1',L[2],{}],['t1',L[0],{}],['ankle','Knöchel-Skala',ANKY]].forEach(([k,l,o])=>{
+  const all=series(k).filter(p=>p[0]>=c),ro=rolling(series(k)).filter(p=>p[0]>=c);
+  h+=`<div class="card mt8"><b class="chl">${esc(l)}</b>${chartSVG([{pts:all,color:C.mut,dots:true,line:false},{pts:ro,color:C.chalk,w:2.2}],
+   Object.assign({label:l,ov:doseOv(),h:170,empty:'Noch zu wenig Werte im Zeitraum.'},o))}</div>`});
+ h+=`<p class="hint"><span class="ovk"></span> Orange gestrichelt: Gesamtdosis laut Plan, orange Punkte: abgehakte Tagessumme, beides in µg auf der rechten Achse. Weiße Linie: 7-Tage-Schnitt, graue Punkte: Tageswerte.</p></section>`;
+ const lg=Object.keys(S.days).filter(d=>S.days[d].med).sort().slice(-10).reverse();
+ if(lg.length)h+=`<section class="sec"><h3>Tagessummen</h3><div class="card list">${lg.map(d=>{const Lg=medLog(d),rows=medRows(d);
+  const okN=rows.filter(o=>(Lg[o.x.id]||{}).s==='ok').length,skN=rows.filter(o=>(Lg[o.x.id]||{}).s==='skip').length;
+  return `<button class="row" data-pa="dgo" data-v="${d}"><span class="grow"><b>${fD(d)}</b><small>${okN} von ${rows.length} genommen${skN?`, ${skN} ausgelassen`:''}</small></span><span class="mut">${fmtUg(num(S.days[d].medug))}</span></button>`}).join('')}</div></section>`;
+ return h;
+}
+
+/* ---------- Fotos im Backup ---------- */
+function blobToData(b){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(b)})}
+async function dataToBlob(u){const r=await fetch(u);return r.blob()}
+async function phExport(){
+ const out={};let n=0;
+ for(const p of (S.photos||[])){
+  try{let b=null;
+   if(p.blobKey)b=await DB.get(p.blobKey);
+   if(!b&&p.asset){const r=await fetch(phUrl(p));if(r.ok)b=await r.blob()}
+   if(b){const u=await blobToData(b);if(u){out[p.id]=u;n++}}
+  }catch(e){}
+ }
+ return n?out:null;
+}
+async function phImport(){
+ const P=ui.pendingPhotos;ui.pendingPhotos=null;if(!P)return 0;let n=0;
+ for(const p of (S.photos||[])){
+  const u=P[p.id];if(!u)continue;
+  try{
+   const b=await dataToBlob(u);
+   if(AS){if(!p.asset){const r=await AS.upload(b);p.asset=r.id;delete p.blobKey;n++}}
+   else{const k='photo-'+p.id,have=await DB.get(k);if(!have){await DB.set(k,b);n++}p.blobKey=k;delete p.asset;PURL[p.id]=URL.createObjectURL(b)}
+  }catch(e){}
+ }
+ phHydrate();return n;
+}
+function mergeExtra(src){
+ const pid=new Set((S.photos||[]).map(p=>p.id));
+ (src.photos||[]).forEach(p=>{if(!pid.has(p.id))S.photos.push(p)});
+ S.photos.sort((a,b)=>a.date<b.date?-1:1);
+ if(src.meds&&src.meds.v){if(!S.meds)S.meds={v:[]};const have=new Set(S.meds.v.map(v=>v.from));
+  src.meds.v.forEach(v=>{if(!have.has(v.from))S.meds.v.push(v)});S.meds.v.sort((a,b)=>a.from<b.from?-1:1)}
+}
+function ankPhStats(A,B){
+ const m=d=>S.measures.find(x=>x.date===d)||{vals:{}},ab=d=>num(m(d).vals[ANKF[1]]);
+ const df=d=>{const x=num(m(d).vals[ANKF[0]]),y=ab(d);return x!=null&&y!=null?y-x:null};
+ const pair=(a,b,k)=>a==null&&b==null?'–':`${a==null?'–':fmt(a,k)} → ${b==null?'–':fmt(b,k)}`;
+ return `<div class="trend" style="margin-top:8px"><div><small>Skala</small><b class="pb">${pair(ankVal(A.date),ankVal(B.date),0)}</b><em>0 bis 3</em></div>
+  <div><small>Umfang abends</small><b class="pb">${pair(ab(A.date),ab(B.date),1)}</b><em>cm</em></div>
+  <div><small>Abends − morgens</small><b class="pb">${pair(df(A.date),df(B.date),1)}</b><em>cm</em></div></div>`;
+}
+
+/* ---------- Eingaben ---------- */
+document.addEventListener('click',e=>{
+ if(!S)return;const t=e.target.closest('[data-pm]');if(!t)return;
+ const a=t.dataset.pm,v=t.dataset.v,d=ui.date||todayStr();
+ if(a==='close'){ui.medEd=null;return closeSheet()}
+ if(a==='ankam'){const r=dayRec(d),x=+v;if(num(r.ankleAM)===x)delete r.ankleAM;else r.ankleAM=x;if(!Object.keys(r).length)delete S.days[d];save();return render()}
+ if(a==='ank'){const r=dayRec(d),x=+v;if(num(r.ankle)===x)delete r.ankle;else r.ankle=x;if(!Object.keys(r).length)delete S.days[d];save();return render()}
+ if(a==='mtog'){const r=dayRec(d),L=r.med||(r.med={}),o=medRows(d).find(o=>o.x.id===v);if(!o)return;
+  if(L[v]&&L[v].s==='ok')delete L[v];else L[v]={s:'ok',t:d===todayStr()?nowHM():o.x.t};
+  medRecalc(d);save();return render()}
+ if(a==='mall'){const r=dayRec(d),L=r.med||(r.med={});medRows(d).forEach(o=>{if(!L[o.x.id])L[o.x.id]={s:'ok',t:o.x.t}});
+  medRecalc(d);save();render();return toast('Alle Einnahmen wie geplant abgehakt')}
+ if(a==='mdet')return medDetSheet(d,v);
+ if(a==='msave'||a==='mskip'){const M=ui.mdet;if(!M)return;const o=medRows(M.d).find(o=>o.x.id===M.id);if(!o)return;
+  const r=dayRec(M.d),L=r.med||(r.med={}),note=($('#mdn')||{}).value||'';let en;
+  if(a==='msave'){const amt=$('#mda').value,route=$('#mdr').value,tt=$('#mdt').value||o.x.t;
+   en={s:'ok',t:tt};if(amt!==o.x.amt)en.amt=amt;if(route!==(o.it.route||''))en.route=route}
+  else en={s:'skip'};
+  if(note.trim())en.note=note.trim();
+  L[M.id]=en;medRecalc(M.d);ui.mdet=null;save();return closeSheet()}
+ if(a==='mclr'){const M=ui.mdet;if(!M)return;const r=dayRec(M.d);if(r.med)delete r.med[M.id];medRecalc(M.d);ui.mdet=null;save();return closeSheet()}
+ if(a==='mjump'){const el=document.getElementById('medsec');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(a==='medplan'){medEdNew();return openSheet(medEdHtml())}
+ if(a==='mxad'){const it=ui.medEd.items[+v];const lt=last(it.doses);it.doses.push({id:uid(),t:lt?lt.t:'08:00',amt:lt?lt.amt:'1'});return medEdRender()}
+ if(a==='mxdd'){const [i,j]=v.split('.').map(Number);ui.medEd.items[i].doses.splice(j,1);return medEdRender()}
+ if(a==='mxai'){ui.medEd.items.push({id:uid(),name:'',str:null,unit:'',form:'Kapsel',route:'geschluckt',doses:[{id:uid(),t:'08:00',amt:'1'}]});return medEdRender()}
+ if(a==='mxdi'){ui.medEd.items.splice(+v,1);return medEdRender()}
+ if(a==='mxtxt'){const it=medParse(ui.medEd.txt);if(!it.length)return toast('Keine Zeile erkannt');ui.medEd.items=it;ui.medEd.txt='';medEdRender();return toast(it.length+(it.length>1?' Medikamente':' Medikament')+' übernommen')}
+ if(a==='mxsave')return medEdSave();
+ if(a==='mvdel'){askC('Diese Planversion löschen? Tage in ihrem Zeitraum fallen dann auf die Version davor zurück.').then(ok=>{if(!ok)return;
+  S.meds.v=S.meds.v.filter(x=>x.id!==v);Object.keys(S.days).forEach(x=>{if(S.days[x].med)medRecalc(x)});save();render()});return}
+ if(a==='bkph'){S.settings.bkPhotos=!S.settings.bkPhotos;save();return render()}
+ if(a==='phk'){ui.ppose=v;ui.pdate=todayStr();return phSheet()}
+ if(a==='phv'){ui.prog='fotos';ui.ppose=v;ui.pa=null;ui.pb=null;return go('progress')}
+});
+document.addEventListener('input',e=>{
+ if(!S)return;const t=e.target,ds=t.dataset;if(!ds)return;
+ if(ds.mx){medEdSet(ds.mx,t.value);return}
+ if(ds.ka&&ds.ka!=='date'){const d=ui.kdate||todayStr();let m=S.measures.find(x=>x.date===d);
+  const v=num(t.value);
+  if(!m){if(v==null)return;m={date:d,vals:{}};S.measures.push(m);S.measures.sort((a,b)=>a.date.localeCompare(b.date))}
+  if(v==null)delete m.vals[ds.ka];else m.vals[ds.ka]=v;
+  if(!Object.keys(m.vals).length)S.measures=S.measures.filter(x=>x!==m);
+  save();return}
+});
+document.addEventListener('change',e=>{
+ if(!S)return;const t=e.target,ds=t.dataset;if(!ds)return;
+ if(ds.mx){medEdSet(ds.mx,t.value);if(t.tagName==='SELECT'||t.type==='time')medEdRender();return}
+ if(ds.ka==='date'){ui.kdate=t.value||todayStr();return render()}
+ if(ds.ka)return render();
+});
+
 (async()=>{await DB.open();await loadHist();
  const st=await DB.get('state');S=st?migrate(st):fresh();
  if(!st&&typeof claude!=='undefined'&&claude.use)CLOUD='laden';
  await seedLocal(st);
  try{let ch=markerSync();if(refFill())ch=1;if(ch)DB.set('state',S)}catch(e){}
+ try{if(ankMigrate())DB.set('state',S)}catch(e){}
  syncLater(st);
  phHydrate();
  planLoad();
