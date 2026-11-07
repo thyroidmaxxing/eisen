@@ -381,6 +381,26 @@ nav.tabs button.on{color:var(--acc)}
 .sheet-card .medit .txt{background:var(--s3)}
 .srow .chips{flex-wrap:nowrap}
 
+
+.ci{background:var(--s1);border-radius:16px;padding:11px 12px;min-width:0}
+.cigrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ci small{display:block;font-size:12px;color:var(--mut)}
+.ci b{display:block;font:700 20px/1.25 var(--num);font-variant-numeric:tabular-nums;margin-top:2px}
+.ci em{display:block;font-style:normal;font-size:12px;color:var(--dim);line-height:1.4;margin-top:3px}
+.ci em .dot{width:9px;height:9px;vertical-align:-1px}
+.ci.warn{box-shadow:inset 3px 0 0 var(--yel)}
+.ci.bad{box-shadow:inset 3px 0 0 var(--red)}
+.cihead{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
+.cihead div{flex:1;min-width:0}
+.cihead b{display:block;font-size:18px;font-weight:750}
+.cihead span{font-size:13px;color:var(--mut)}
+.cihead .ib[disabled]{opacity:.3}
+.cidue .srow span{display:flex;align-items:center;gap:8px}
+.cidue .srow .dot{width:10px;height:10px}
+.note-line.sat{box-shadow:inset 4px 0 0 var(--acc)}
+.dot.hollow{background:transparent;background-image:none;box-shadow:inset 0 0 0 2px #ECEAE4}
+.lnk{display:inline-block;width:16px;height:3px;border-radius:2px}
+
 </style>
 </head>
 <body>
@@ -450,7 +470,7 @@ function defaultPlan(){return {rotation:['Push','Pull','Legs','Off','OK','Legs 2
 const MK=[['TSH','mU/l'],['fT3','pg/ml'],['fT4','ng/dl'],['TPO-AK','IU/ml'],['Tg-AK','IU/ml'],['Testosteron gesamt','ng/dl'],['Testosteron frei','pg/ml'],['Estradiol','pg/ml'],['SHBG','nmol/l'],['LH','U/l'],['FSH','U/l'],['Prolaktin','ng/ml'],['DHEA-S','µg/dl'],['Cortisol morgens','µg/dl'],['Hämatokrit','%'],['Hämoglobin','g/dl'],['Ferritin','ng/ml'],['Vitamin D (25-OH)','ng/ml'],['HbA1c','%'],['Glukose nüchtern','mg/dl'],['LDL','mg/dl'],['HDL','mg/dl'],['Triglyceride','mg/dl'],['GOT (AST)','U/l'],['GPT (ALT)','U/l'],['GGT','U/l'],['Kreatinin','mg/dl'],['CK','U/l'],['Vitamin A (Retinol)','µg/l'],['Kupfer','µg/dl']];
 function fresh(){return {v:1,days:{},photos:[],meds:{v:[]},sessions:[],measures:[],blood:[],tolerance:[],phases:[],active:null,plan:defaultPlan(),
  cycle:{n:18,week:1,len:6,intro:true,deload:true,start:todayStr(),hist:[]},
- settings:{inc:2.5,bkPhotos:false,backupDays:7,lastBackup:null,measureEvery:14,bloodEvery:90,
+ settings:{inc:2.5,bkPhotos:false,backupDays:7,lastBackup:null,measureEvery:28,photoEvery:14,bloodEvery:90,
   labels:['Temp morgens','Temp nachmittags','Puls morgens','Puls nachmittags'],
   supps:['Kreatin','Vitamin D3','Magnesium','Omega-3','Elektrolyte','EAA'],
   tags:['Migräne','Kopfschmerzen','Schlecht geschlafen','Stress','Refeed','Energie hoch','Energie tief','Völlegefühl'],
@@ -506,7 +526,6 @@ function dueText(d,every){const left=every-daysBetween(d,todayStr());return left
 function backupBanner(){const lb=S.settings.lastBackup,n=S.settings.backupDays||7;if(!Object.keys(S.days).length&&!S.sessions.length)return '';const age=lb?daysBetween(lb,todayStr()):null;if(age!=null&&age<n)return '';
  return `<div class="banner"><div><b>${lb?`Letztes Backup vor ${age} Tagen`:'Noch kein Backup'}</b><span>${CLOUD==='an'?'Synchronisiert, ein Backup schützt zusätzlich vor eigenen Fehlern.':'Deine Daten liegen nur auf diesem Gerät.'}</span></div><button data-a="backup">Sichern</button></div>`}
 function dueBanner(){let o='';const m=last(S.measures),b=last(S.blood);
- if(m&&S.settings.measureEvery-daysBetween(m.date,todayStr())<=0)o+=`<button class="note-line" data-a="gohealth" data-v="koerper">Messung: ${dueText(m.date,S.settings.measureEvery)}</button>`;
  if(b&&S.settings.bloodEvery-daysBetween(b.date,todayStr())<=0)o+=`<button class="note-line" data-a="gohealth" data-v="blut">Blutbild: ${dueText(b.date,S.settings.bloodEvery)}</button>`;return o}
 const elapsed=()=>`${Math.max(0,Math.floor((Date.now()-S.active.start)/6e4))} min`;
 function fld(r,f,label,unit,mode='decimal'){return `<label class="fld"><span>${esc(label)}</span><div class="in"><input data-f="${f}" inputmode="${mode}" autocomplete="off" value="${esc(dv(r[f]))}"><i>${unit}</i></div></label>`}
@@ -590,7 +609,7 @@ function edHtml(){const e=ui.edit.e;return `<div class="sh-h"><h2>${ui.edit.ei==
 
 /* ---------- Diagramm ---------- */
 function chartSVG(sets,opt={}){const all=sets.flatMap(s=>s.pts);if(all.length<2)return `<p class="empty">${opt.empty||'Noch zu wenig Daten für einen Verlauf.'}</p>`;
- const W=360,H=opt.h||200,pl=40,pr=opt.ov?40:10,pt=10,pb=24;let t0=Infinity,t1=-Infinity,v0=Infinity,v1=-Infinity;
+ const W=360,H=opt.h||200,pl=40,pr=(opt.ov||opt.r)?40:10,pt=10,pb=24;let t0=Infinity,t1=-Infinity,v0=Infinity,v1=-Infinity;
  all.forEach(([d,v])=>{const t=tms(d);if(t<t0)t0=t;if(t>t1)t1=t;if(v<v0)v0=v;if(v>v1)v1=v});
  if(t1===t0)t1=t0+864e5;const pad=(v1-v0)*.08||Math.abs(v1)*.05||1;v0-=pad;v1+=pad;if(opt.y0!=null)v0=Math.min(v0,opt.y0);if(opt.y1!=null)v1=Math.max(v1,opt.y1);
  const X=t=>+(pl+(t-t0)/(t1-t0)*(W-pl-pr)).toFixed(1),Y=v=>+(pt+(1-(v-v0)/(v1-v0))*(H-pt-pb)).toFixed(1);
@@ -599,8 +618,13 @@ function chartSVG(sets,opt={}){const all=sets.flatMap(s=>s.pts);if(all.length<2)
  for(const v of (opt.ticks||[0,1,2,3].map(i=>v0+span*i/3))){const y=Y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#2E353C"/><text x="${pl-6}" y="${y+4}" text-anchor="end" class="ax">${v.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}</text>`}
  const ds=(t1-t0)/864e5,fx=t=>{const d=new Date(t);return ds<200?`${p2(d.getDate())}.${p2(d.getMonth()+1)}.`:`${p2(d.getMonth()+1)}/${String(d.getFullYear()).slice(2)}`};
  g+=`<text x="${pl}" y="${H-6}" class="ax">${fx(t0)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end" class="ax">${fx(t1)}</text>`;
- sets.forEach(s=>{if(s.dots&&s.pts.length<=600)s.pts.forEach(([d,v])=>{g+=`<circle cx="${X(tms(d))}" cy="${Y(v)}" r="${s.r||2}" fill="${s.color}" opacity="${s.op||.5}"/>`});
+ sets.forEach(s=>{if(s.dots&&s.pts.length<=600)s.pts.forEach(([d,v])=>{g+=`<circle cx="${X(tms(d))}" cy="${Y(v)}" r="${s.r||2}" ${s.hollow?`style="fill:var(--s1)" stroke="${s.color}" stroke-width="1.8"`:`fill="${s.color}" opacity="${s.op||.5}"`}/>`});
   if(s.line!==false&&s.pts.length>1)g+=`<path d="${s.pts.map(([d,v],i)=>(i?'L':'M')+X(tms(d))+','+Y(v)).join('')}" fill="none" stroke="${s.color}" stroke-width="${s.w||2}" stroke-linejoin="round" stroke-linecap="round"/>`});
+ if(opt.r&&opt.r.pts){const rp=opt.r.pts.filter(([d])=>{const t=tms(d);return t>=t0&&t<=t1});
+  if(rp.length>1){let r0=Math.min(...rp.map(x=>x[1])),r1=Math.max(...rp.map(x=>x[1]));const lo=r0,hi=r1,rpad=(r1-r0)*.12||.5;r0-=rpad;r1+=rpad;
+   const Y3=v=>+(pt+(1-(v-r0)/(r1-r0))*(H-pt-pb)).toFixed(1),rc=opt.r.color||'#3B7BDB',rd=opt.r.dec??1;
+   g+=`<path d="${rp.map(([d,v],i)=>(i?'L':'M')+X(tms(d))+','+Y3(v)).join('')}" fill="none" stroke="${rc}" stroke-width="1.8" opacity=".9"/>`;
+   g+=`<text x="${W-pr+5}" y="${Y3(hi)+4}" class="ax" style="fill:${rc}">${fmt(hi,rd)}</text><text x="${W-pr+5}" y="${Y3(lo)+4}" class="ax" style="fill:${rc}">${fmt(lo,rd)}</text>${opt.r.unit?`<text x="${W-pr+5}" y="${pt+4}" class="ax" style="fill:${rc}">${opt.r.unit}</text>`:''}`}}
  if(opt.ov&&opt.ov.steps&&opt.ov.steps.length){const st=opt.ov.steps,dt=opt.ov.dots||[],oc=opt.ov.color||'#FF5A1F';
   const at=t=>{let v=0;st.forEach(([d,u])=>{if(tms(d)<=t)v=u});return v};
   const top=Math.max(at(t0),...st.filter(x=>tms(x[0])>t0&&tms(x[0])<=t1).map(x=>x[1]),...dt.filter(x=>tms(x[0])>=t0&&tms(x[0])<=t1).map(x=>x[1]),1),mx=top*1.15;
@@ -615,8 +639,8 @@ function ranges(){return `<div class="seg sm">${['1M','3M','1J','Alles'].map(l=>
 function cutoff(){const m={'1M':30,'3M':91,'1J':365,'Alles':0}[ui.range];return m?addDays(todayStr(),-m):'0000'}
 
 /* ---------- Progress ---------- */
-function vProgress(){let h=segs('prog',[['gewicht','Gewicht'],['kraft','Kraft'],['zyklus','Zyklen'],['tag','Tageswerte'],['analyse','Analyse'],['volumen','Volumen'],['vorgabe','Vorgabe'],['fotos','Fotos']]);
- return h+({gewicht:pGewicht,kraft:pKraft,zyklus:pZyklus,tag:pTag,analyse:pAnalyse,volumen:pVolumen,vorgabe:pVorgabe,fotos:pFotos})[ui.prog]()}
+function vProgress(){let h=segs('prog',[['checkin','Check-in'],['gewicht','Gewicht'],['kraft','Kraft'],['zyklus','Zyklen'],['tag','Tageswerte'],['analyse','Analyse'],['volumen','Volumen'],['vorgabe','Vorgabe'],['fotos','Fotos']]);
+ return h+({checkin:pCheckin,gewicht:pGewicht,kraft:pKraft,zyklus:pZyklus,tag:pTag,analyse:pAnalyse,volumen:pVolumen,vorgabe:pVorgabe,fotos:pFotos})[ui.prog]()}
 function phaseBands(){const ph=[...S.phases].sort((a,b)=>a.start.localeCompare(b.start));return ph.map((p,i)=>({from:p.start,to:ph[i+1]?ph[i+1].start:todayStr(),color:PHC[p.type]||C.mut}))}
 function pGewicht(){const all=series('w');if(!all.length)return '<p class="empty">Noch keine Gewichtseinträge. Trag im Tageslog dein Gewicht ein.</p>'+phaseSection();
  const ro=rolling(all),c=cutoff(),pts=all.filter(p=>p[0]>=c),rp=ro.filter(p=>p[0]>=c),ch=rp.length>1?last(rp)[1]-rp[0][1]:null,ty=[...new Set(S.phases.map(p=>p.type))];
@@ -640,7 +664,7 @@ function pKraft(){const cnt={};S.sessions.forEach(s=>s.ex.forEach(e=>{cnt[e.name
  const gset=[...new Set(rows.map(r=>r.g))];const gser=gset.map((g,i)=>({g,pts:rows.filter(r=>!r.dl&&r.g===g).map(r=>[r.d,rnd(r.v)]),color:i===gset.length-1?C.chalk:[C.blue,C.yel,C.grn][i%3]}));const pts=rows.filter(r=>!r.dl).map(r=>[r.d,rnd(r.v)]),top=rows.reduce((m,r)=>!m||r.v>m.v?r:m,null);
  return `<select class="txt" data-sel="ex">${names.map(n=>`<option ${n===ui.ex?'selected':''}>${esc(n)}</option>`).join('')}</select><div class="card mt8"><div class="kv"><div><small>Bestwert, geschätztes 1RM</small><b>${top?fmt(top.v,1)+' kg':'–'}</b></div><div><small>Datum</small><b>${top?fD(top.d):'–'}</b></div></div>${chartSVG(gser.map(x=>({pts:x.pts,color:x.color,dots:true,r:2.6,op:.9,w:2})),{label:'Kraftverlauf'})}${gset.length>1?`<div class="legend">${gser.map(x=>`<span>${dot(x.color)}${esc(x.g||'ohne Version')}</span>`).join('')}</div><p class="hint">Getrennte Linien, weil das Gerät gewechselt hat. Die Lasten sind nicht vergleichbar.</p>`:''}</div>
  <section class="sec"><h3>Bester Satz pro Einheit</h3><div class="card list">${rows.slice(-12).reverse().map(r=>`<div class="row"><span class="grow"><b>${dv(r.t.w)} kg × ${r.t.r}${r.t.rir!=null?` @${r.t.rir}`:''}</b><small>${fD(r.d)}${r.dl?', Deload':''}</small></span><span class="mut">${fmt(r.v,1)}</span></div>`).join('')}</div></section>`}
-function metrics(){const L=S.settings.labels;return [['w','Gewicht','kg',1],['kcal','Kalorien','kcal',0],['p','Protein','g',0],['c','Carbs','g',0],['f','Fett','g',0],['t1',L[0],'°C',2],['t2',L[1],'°C',2],['hr1',L[2],'bpm',0],['hr2',L[3],'bpm',0],['bps1','Blutdruck sys. morgens','mmHg',0],['bpd1','Blutdruck dia. morgens','mmHg',0],['bps2','Blutdruck sys. nachmittags','mmHg',0],['bpd2','Blutdruck dia. nachmittags','mmHg',0],['cardio','Cardio','min',0],['steps','Schritte','',0],['sleep','Schlaf','h',1],['stool','Stuhlgang','pro Tag',1],['ankle','Knöchel-Skala','0 bis 3',1],['medug','Dosis','µg',1]]}
+function metrics(){const L=S.settings.labels;return [['w','Gewicht','kg',1],['kcal','Kalorien','kcal',0],['p','Protein','g',0],['c','Carbs','g',0],['f','Fett','g',0],['t1',L[0],'°C',2],['t2',L[1],'°C',2],['hr1',L[2],'bpm',0],['hr2',L[3],'bpm',0],['bps1','Blutdruck sys. morgens','mmHg',0],['bpd1','Blutdruck dia. morgens','mmHg',0],['bps2','Blutdruck sys. nachmittags','mmHg',0],['bpd2','Blutdruck dia. nachmittags','mmHg',0],['cardio','Cardio','min',0],['steps','Schritte','',0],['sleep','Schlaf','h',1],['stool','Stuhlgang','pro Tag',1],['ankle','Knöchel-Skala','0 bis 3',1],['medug','Dosis','µg',1],['waist','Taille','cm',1]]}
 function pTag(){const M=tagMetrics(),m=M.find(x=>x[0]===ui.metric)||M[5];if(m[0]==='bp1'||m[0]==='bp2')return pBP(M,m);const all=series(m[0]),ro=rolling(all),c=cutoff(),a=n=>avg(rng(todayStr(),0,n-1,m[0]));
  return `<select class="txt" data-sel="metric">${M.map(x=>`<option value="${x[0]}" ${x[0]===m[0]?'selected':''}>${esc(x[1])}</option>`).join('')}</select><div class="mt8">${ranges()}</div><div class="card"><div class="kv"><div><small>Ø 7 Tage</small><b>${fmt(a(7),m[3])}</b></div><div><small>Ø 30 Tage</small><b>${fmt(a(30),m[3])}</b></div><div><small>Ø 90 Tage</small><b>${fmt(a(90),m[3])}</b></div></div>${chartSVG([{pts:all.filter(p=>p[0]>=c),color:C.mut,dots:true,line:false},{pts:ro.filter(p=>p[0]>=c),color:C.chalk,w:2.2}],Object.assign({label:m[1],ov:['hr1','t1','ankle'].includes(m[0])?doseOv():null},m[0]==='ankle'?ANKY:{}))}<p class="hint">Punkte sind Tageswerte, die Linie ist der 7-Tage-Schnitt${m[2]?`, Einheit ${m[2]}`:''}.</p>${ovHint(m[0])}</div>`}
 function perfIndex(){const res={},ss=S.sessions,best=e=>Math.max(0,...e.sets.map(t=>e1rm(t.w,t.r)||0));
@@ -664,8 +688,11 @@ function vHealth(){return segs('health',[['koerper','Körper'],['knoechel','Knö
 function mbForm(key,fk,fields,unitOf,label,btn){const f=ui[fk],arr=S[key];
  return `<details class="card" ${arr.length?'':'open'}><summary>${label}</summary><label class="lbl mt8">Datum<input type="date" class="txt" data-form="${fk}.date" value="${f.date}"></label><div class="grid2 mt8">${fields.map(n=>`<label class="fld"><span>${esc(n)}</span><div class="in"><input data-mb="${fk}" data-k="${esc(n)}" inputmode="decimal" value="${esc(f.vals[n]||'')}"><i>${esc(unitOf(n))}</i></div></label>`).join('')}</div><button class="primary" data-a="mbsave" data-k="${key}" data-f="${fk}">${btn}</button></details>`}
 function entryList(key,delA){const arr=S[key];return arr.length?`<section class="sec"><h3>Einträge</h3><div class="card list">${arr.map((x,i)=>({x,i})).reverse().slice(0,40).map(({x,i})=>`<div class="row"><span class="grow"><b>${fD(x.date)}</b><small>${Object.entries(x.vals).map(([k,v])=>`${esc(k)} ${dv(v)}`).join(', ')}</small></span><button class="ib sm" data-a="${delA}" data-i="${i}" aria-label="Eintrag löschen">✕</button></div>`).join('')}</div></section>`:''}
-function hKoerper(){const F=S.settings.mfields,m=last(S.measures);if(!F.includes(ui.mf))ui.mf=F[0];
- let h=`<p class="mut">${m?`Letzte Messung am ${fD(m.date)}. ${dueText(m.date,S.settings.measureEvery)}`:'Noch keine Messung eingetragen.'}</p>`+mbForm('measures','mform',F,n=>/%/.test(n)?'%':'cm','Neue Messung eintragen','Messung speichern');
+function hKoerper(){const F=S.settings.mfields,m=lastFull(),fd=fullDue(),t=todayStr(),w=waistNear(ui.mform.date||t,3);if(!F.includes(ui.mf))ui.mf=F[0];
+ let h=waistCard();
+ h+=`<section class="sec"><h3>Volles Maßband, alle ${num(S.settings.measureEvery)||28} Tage</h3><p class="mut" style="margin-top:0">${m?`Letzte volle Messung am ${fD(m.date)}. `:'Noch keine volle Messung. '}${fd<=t?(fd<t?`Fällig seit Samstag, ${fD(fd)}.`:'Heute fällig.'):`Nächste am Samstag, ${fD(fd)}.`}</p>`
+  +mbForm('measures','mform',F,n=>/%/.test(n)?'%':'cm','Neue Messung eintragen','Messung speichern')
+  +`<p class="hint">Hals an der schmalsten Stelle, Knöchel morgens und abends. Die Taille fragt das Maßband nicht ab: Beim Speichern übernimmt die App den Wochenwert${w?`, gerade ${fmt(w.v,1)} cm vom ${fDs(w.d)}`:''}, wenn er höchstens drei Tage entfernt liegt.</p></section>`;
  if(S.measures.length){const pts=S.measures.map(x=>[x.date,num(x.vals[ui.mf])]).filter(p=>p[1]!=null);
   h+=`<section class="sec"><h3>Verlauf</h3><select class="txt" data-sel="mf">${F.map(f=>`<option ${f===ui.mf?'selected':''}>${esc(f)}</option>`).join('')}</select><div class="card mt8">${chartSVG([{pts,color:C.chalk,dots:true,r:3,op:1,w:2}],{label:ui.mf,empty:'Für einen Verlauf braucht es mindestens zwei Messungen.'})}</div></section>`}
  return h+entryList('measures','mdel')}
@@ -686,7 +713,7 @@ function vMehr(){const st=S.settings;
  return `<section class="sec" style="margin-top:6px"><h3>Backup</h3><div class="card"><p class="mut" style="margin-top:0">${st.lastBackup?`Letztes Backup am ${fD(st.lastBackup)}.`:'Noch kein Backup erstellt.'} Deine Daten liegen nur auf diesem Handy. Speicher das Backup in Google Drive, iCloud oder schick es dir selbst.</p><button class="primary" data-a="backup">Backup sichern</button><button class="ghost" data-a="imp">Backup oder Import laden</button><input type="file" id="imp" accept=".json,application/json" hidden>
  <div class="srow mt8"><span>Fotos mitsichern<small>Macht die Datei deutlich größer, je Foto etwa 150 bis 300 KB.</small></span><button class="tog ${st.bkPhotos?'on':''}" data-pm="bkph" aria-label="Fotos mitsichern"></button></div><div class="srow"><span>Erinnerung nach Tagen</span><input class="txt num-s" data-setting="backupDays" inputmode="numeric" value="${st.backupDays}"></div><div class="srow"><span>Dauerhaft gespeichert</span><span id="persist" class="mut">…</span></div></div></section>
  ${medSettings()}
- <section class="sec"><h3>Training und Erinnerungen</h3><div class="card list"><div class="srow"><span>Standard-Steigerung in kg</span><input class="txt num-s" data-setting="inc" inputmode="decimal" value="${dv(st.inc)}"></div><div class="srow"><span>Abstand Messungen in Tagen</span><input class="txt num-s" data-setting="measureEvery" inputmode="numeric" value="${st.measureEvery}"></div><div class="srow"><span>Abstand Blutbilder in Tagen</span><input class="txt num-s" data-setting="bloodEvery" inputmode="numeric" value="${st.bloodEvery}"></div></div></section>
+ <section class="sec"><h3>Training und Erinnerungen</h3><div class="card list"><div class="srow"><span>Standard-Steigerung in kg</span><input class="txt num-s" data-setting="inc" inputmode="decimal" value="${dv(st.inc)}"></div><div class="srow"><span>Abstand volles Maßband in Tagen<small>fällig am Samstag danach</small></span><input class="txt num-s" data-setting="measureEvery" inputmode="numeric" value="${st.measureEvery}"></div><div class="srow"><span>Abstand Fotos in Tagen<small>fällig am Samstag danach</small></span><input class="txt num-s" data-setting="photoEvery" inputmode="numeric" value="${st.photoEvery??14}"></div><div class="srow"><span>Abstand Blutbilder in Tagen</span><input class="txt num-s" data-setting="bloodEvery" inputmode="numeric" value="${st.bloodEvery}"></div></div></section>
  <section class="sec"><h3>Namen der Vitalfelder</h3><div class="grid2">${st.labels.map((l,i)=>`<input class="txt" data-lbl="${i}" value="${esc(l)}">`).join('')}</div></section>
  ${[['supps','Supplements'],['tags','Tags'],['pre','Pre-Workout-Optionen'],['mfields','Messfelder']].map(([k,l])=>`<section class="sec"><h3>${l}</h3><textarea class="txt" rows="4" data-list="${k}">${esc(st[k].join('\n'))}</textarea></section>`).join('')}
  <p class="hint">Eine Zeile pro Eintrag. Gespeichert wird beim Verlassen des Feldes.</p>
@@ -745,6 +772,7 @@ async function edSave(){const e=ui.edit.e;e.name=String(e.name).trim();if(!e.nam
 /* ---------- Messungen und Blut speichern ---------- */
 function saveMB(key,fk,label){const f=ui[fk],vals={};Object.entries(f.vals).forEach(([k,v])=>{const n=num(v);if(n!=null)vals[k]=n});
  if(!f.date)return toast('Datum fehlt');if(!Object.keys(vals).length)return toast('Keine Werte eingetragen');
+ if(key==='measures'&&vals['Taille (Nabel)']==null&&Object.keys(vals).some(k=>!ANKF.includes(k))){const w=waistNear(f.date,3);if(w)vals['Taille (Nabel)']=w.v}
  const ex=S[key].find(x=>x.date===f.date);if(ex)Object.assign(ex.vals,vals);else S[key].push({date:f.date,vals});S[key].sort((a,b)=>a.date.localeCompare(b.date));
  ui[fk]={date:todayStr(),vals:{}};save();render();toast(`${label} gespeichert`)}
 
@@ -829,7 +857,7 @@ async function act(a,ds,el){const A=S.active;switch(a){
  case 'backup':exportBackup();break;
  case 'imp':$('#imp').click();break;
  case 'impmerge':merge(ui.pendingImport);ui.pendingImport=null;await phImport();save();closeSheet();toast('Daten zusammengeführt');break;
- case 'impreplace':if(await askC('Alle Daten auf diesem Gerät durch die Datei ersetzen?')){S=migrate(ui.pendingImport);ui.pendingImport=null;ankMigrate();await phImport();save();closeSheet();toast('Daten geladen')}break;
+ case 'impreplace':if(await askC('Alle Daten auf diesem Gerät durch die Datei ersetzen?')){S=migrate(ui.pendingImport);ui.pendingImport=null;ankMigrate();mrMigrate();await phImport();save();closeSheet();toast('Daten geladen')}break;
  case 'persist':if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(()=>persistStatus());break;
  case 'reset':if(await askC('Wirklich alle Daten löschen?')&&await askC('Sicher? Ohne Backup ist alles weg.')){S=fresh();save();go('heute')}break;
 }}
@@ -931,7 +959,7 @@ async function cloudPush(){
 function cloudSave(){if(!ADB)return;clearTimeout(cloudT);cloudT=setTimeout(cloudPush,1500)}
 
 /* ---------- Fotos ---------- */
-const POSES_NEU=['Knöchel links seitlich','Knöchel rechts seitlich','Körper vorne','Körper seitlich','Körper hinten'];
+const POSES_NEU=['Körper vorne','Körper seitlich','Körper hinten','Knöchel links seitlich','Knöchel rechts seitlich'];
 const POSES_ALT=['Front entspannt','Front angespannt','Seite','Rücken','Beine'];
 function poseList(){return POSES_NEU.concat(POSES_ALT.filter(p=>(S.photos||[]).some(x=>x.pose===p)))}
 function phUrl(p){
@@ -995,7 +1023,7 @@ function phSheet(){
   <div class="mt8"><span class="lbl">Pose</span><div class="chips mt8">${poseList().map(p=>
     `<button class="chip ${ (ui.ppose||poseList()[0])===p?'on':''}" data-pa="pose" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
   <label class="phdrop" for="phfile">Aus der Galerie oder Kamera wählen<input id="phfile" type="file" accept="image/*" multiple hidden></label>
-  <p class="hint">Bilder werden auf 1080 px an der langen Seite verkleinert und als JPEG mit Qualität 0,7 gespeichert. Gewicht und KFA des Tages werden automatisch mitgespeichert.
+  <p class="hint"><b>Morgens nüchtern, gleiches Licht, gleicher Ort, gleicher Abstand.</b> Bilder werden auf 1080 px an der langen Seite verkleinert und als JPEG mit Qualität 0,7 gespeichert. Gewicht und KFA des Tages werden automatisch mitgespeichert.
    ${AS?'Sie liegen im Artefaktspeicher und sind auf allen Geräten da.':'Sie liegen auf diesem Gerät. Ins Backup kommen sie nur, wenn in den Einstellungen „Fotos mitsichern“ an ist.'}</p>`);
 }
 function pFotos(){
@@ -1016,7 +1044,7 @@ function pFotos(){
   const dk=(A.kfa!=null&&B.kfa!=null)?B.kfa-A.kfa:null;
   const m1=nearM?nearM(A.date):null,m2=nearM?nearM(B.date):null;
   const g=(m,k)=>m&&m.vals&&m.vals[k]!=null?num(m.vals[k]):null;
-  const da=(k)=>{const x=g(m1,k),y=g(m2,k);return x!=null&&y!=null?sg(y-x,1):'–'};
+  const da=(k)=>{const x=g(nearMk(A.date,k),k),y=g(nearMk(B.date,k),k);return x!=null&&y!=null?sg(y-x,1):'–'};
   h+=`<div class="card">
    ${ui.pwipe?`<div class="wipe"><img src="${phUrl(A)}" alt="Vorher ${esc(fD(A.date))}">
      <img id="wpb" src="${phUrl(B)}" alt="Nachher ${esc(fD(B.date))}" style="clip-path:inset(0 0 0 50%)"><span class="hl" id="wph"></span></div>
@@ -1028,7 +1056,7 @@ function pFotos(){
     <div><small>Gewicht</small><b>${dw==null?'–':sg(dw,1)}</b><em>kg</em></div>
     <div><small>KFA</small><b>${dk==null?da('KFA %'):sg(dk,1)}</b><em>%</em></div></div>
    ${/^Knöchel/.test(ui.ppose)?ankPhStats(A,B):`<div class="trend" style="margin-top:8px"><div><small>Arm rechts</small><b>${da('Arm rechts')}</b><em>cm</em></div>
-    <div><small>Taille</small><b>${da(S.settings.mfields.find(f=>/Tai/i.test(f))||'Taille (Nabel)')}</b><em>cm</em></div>
+    <div><small>Taille</small><b>${dWaist(A.date,B.date)}</b><em>cm</em></div>
     <div><small>Brust</small><b>${da('Brust')}</b><em>cm</em></div></div>`}
    <button class="link mt8" data-pa="wipe">${ui.pwipe?'Nebeneinander zeigen':'Überblenden'}</button></div>`;
  }else h+=`<p class="empty">Für diese Pose gibt es erst ein Foto. Ab dem zweiten vergleicht die App automatisch.</p>`;
@@ -2230,17 +2258,7 @@ function ankleSection(d){
   <p class="hint">Drucktest: 5 s mit dem Daumen über dem Knöchel drücken, loslassen, schauen ob eine Delle bleibt.</p></section>`;
 }
 /* Mittwoch und Samstag: Umfang und Fotos */
-function kwDue(d){
- const t=todayStr();if(d!==t)return '';
- const wd=pd(t).getDay();if(wd!==3&&wd!==6)return '';
- const m=S.measures.find(x=>x.date===t),has=f=>!!(m&&m.vals&&m.vals[f]!=null),o=[];
- if(!has(ANKF[0]))o.push('Knöchelumfang morgens');
- if(new Date().getHours()>=16&&!has(ANKF[1]))o.push('Knöchelumfang abends');
- const ph=(S.photos||[]).filter(p=>p.date===t);
- if(!ph.some(p=>/^Knöchel/.test(p.pose)))o.push('Knöchelfotos');
- if(wd===6&&!ph.some(p=>/^Körper/.test(p.pose)))o.push('Körperfotos');
- return o.length?`<button class="note-line" data-a="gohealth" data-v="knoechel">${wd===3?'Mittwoch':'Samstag'}: ${o.join(', ')}</button>`:'';
-}
+function kwDue(d){return satDue(d)}
 
 /* ---------- Medikamente ---------- */
 const AMTS=['1/12','1/8','1/6','1/4','1/2','1','2','3'];
@@ -2455,7 +2473,7 @@ function hKnoechel(){
   <label class="lbl">Datum<input class="txt" type="date" data-ka="date" value="${kd}"></label>
   <div class="grid2 mt8"><label class="fld"><span>Morgens</span><div class="in"><input data-ka="${esc(ANKF[0])}" inputmode="decimal" autocomplete="off" value="${gv(ANKF[0])}"><i>cm</i></div></label>
    <label class="fld"><span>Abends</span><div class="in"><input data-ka="${esc(ANKF[1])}" inputmode="decimal" autocomplete="off" value="${gv(ANKF[1])}"><i>cm</i></div></label></div>
-  <p class="hint">Schmalste Stelle über dem Knöchel, jedes Mal dieselbe Stelle, Maßband ohne Zug. Mittwoch und Samstag, morgens direkt nach dem Aufstehen und abends vor dem Schlafen.</p>
+  <p class="hint">Schmalste Stelle über dem Knöchel, jedes Mal dieselbe Stelle, Maßband ohne Zug. Fester Termin ist das volle Maßband alle 4 Wochen, morgens direkt nach dem Aufstehen und abends vor dem Schlafen. Zwischendurch kannst du jederzeit messen.</p>
   ${lastB?`<div class="trend"><div><small>Abends − morgens</small><b>${sg(lastB.a-lastB.m,1)}</b><em>cm am ${fDs(lastB.d)}</em></div>
    <div><small>Morgens</small><b>${fmt(lastB.m,1)}</b><em>cm</em></div><div><small>Abends</small><b>${fmt(lastB.a,1)}</b><em>cm</em></div></div>`:''}
   ${both.length>1?chartSVG([{pts:both.map(x=>[x.d,x.a-x.m]),color:C.blue,dots:true,r:3.2,op:1,w:2.2}],{label:'Differenz abends minus morgens',h:160})
@@ -2466,7 +2484,7 @@ function hKnoechel(){
  </div></section>`;
  /* Fotos */
  const kp=(S.photos||[]).filter(p=>/^Knöchel/.test(p.pose)).length;
- h+=`<section class="sec"><h3>Fotos</h3><div class="card"><p class="mut" style="margin-top:0">Mittwoch und Samstag beide Knöchel von der Seite, samstags dazu Körper vorne, seitlich und hinten. Gleiches Licht, gleiche Uhrzeit, gleicher Abstand.${kp?` Bisher ${kp} Knöchelfotos.`:''}</p>
+ h+=`<section class="sec"><h3>Fotos</h3><div class="card"><p class="mut" style="margin-top:0">Alle 2 Wochen samstags morgens: Körper vorne, seitlich und hinten, dazu beide Knöchel von der Seite. Nüchtern, gleiches Licht, gleicher Ort, gleicher Abstand.${kp?` Bisher ${kp} Knöchelfotos.`:''}</p>
   <button class="primary" data-pm="phk" data-v="Knöchel links seitlich">Knöchelfotos hinzufügen</button>
   ${kp?'<button class="ghost" data-pm="phv" data-v="Knöchel links seitlich">Vergleich ansehen</button>':''}</div></section>`;
  return h;
@@ -2586,9 +2604,170 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
  if(!S)return;const t=e.target,ds=t.dataset;if(!ds)return;
- if(ds.mx){medEdSet(ds.mx,t.value);if(t.tagName==='SELECT'||t.type==='time')medEdRender();return}
+ if(ds.mx){medEdSet(ds.mx,t.value);if(t.tagName==='SELECT')medEdRender();return}
  if(ds.ka==='date'){ui.kdate=t.value||todayStr();return render()}
- if(ds.ka)return render();
+});
+
+/* ==================== Messrhythmus und Samstags-Check-in ====================
+   Taille jeden Samstag als eigener Eintrag im Tageslog-Datensatz (waist1, waist2,
+   waist als Mittelwert, waistWC 1 oder 0 für den Toilettengang).
+   Volles Maßband alle 28 Tage, Fotos alle 14 Tage, beides am Samstag fällig.
+   Der Check-in bündelt die Woche von Sonntag bis Samstag. */
+
+const MF_NEU=['Hals (schmalste Stelle)','Brust','Arm rechts','Oberschenkel rechts','Wade rechts','Hüfte','Knöchel rechts morgens','Knöchel rechts abends'];
+function mrMigrate(){
+ if(!S||!S.settings||(S.settings.mrV||0)>=2)return false;
+ /* alte Feldnamen aus dem Sheet-Import vereinheitlichen, damit der Verlauf durchgeht */
+ const RN={'Taile (Nabel)':'Taille (Nabel)','Hals':'Hals (schmalste Stelle)'};
+ (S.measures||[]).forEach(m=>Object.keys(RN).forEach(k=>{if(m.vals&&m.vals[k]!=null){if(m.vals[RN[k]]==null)m.vals[RN[k]]=m.vals[k];delete m.vals[k]}}));
+ const rest=(S.settings.mfields||[]).filter(f=>!MF_NEU.includes(f)&&!RN[f]&&!/^Tail?le/i.test(f));
+ S.settings.mfields=MF_NEU.concat(rest);
+ S.settings.measureEvery=28;
+ if(S.settings.photoEvery==null)S.settings.photoEvery=14;
+ S.settings.mrV=2;return true;
+}
+const isAnkOnly=m=>Object.keys(m.vals||{}).every(k=>ANKF.includes(k));
+function lastFull(){for(let i=S.measures.length-1;i>=0;i--){if(!isAnkOnly(S.measures[i]))return S.measures[i]}return null}
+const nextSat=d=>addDays(d,(6-pd(d).getDay()+7)%7);
+function fullDue(){const m=lastFull();return m?nextSat(addDays(m.date,num(S.settings.measureEvery)||28)):nextSat(todayStr())}
+function lastPhotoSet(){return last((S.photos||[]).filter(x=>/^Körper/.test(x.pose)).map(x=>x.date).sort())}
+function photoDue(){const l=lastPhotoSet();return l?nextSat(addDays(l,num(S.settings.photoEvery)||14)):nextSat(todayStr())}
+function nearMk(d,k,tol=14){let best=null,bd=1e9;S.measures.forEach(m=>{if(!m.vals||m.vals[k]==null)return;const x=Math.abs(daysBetween(m.date,d));if(x<=tol&&x<bd){bd=x;best=m}});return best}
+
+/* ---------- Taille ---------- */
+function waistPts(){
+ const out=[];
+ Object.keys(S.days).forEach(d=>{const r=S.days[d],v=num(r.waist);if(v!=null)out.push({d,v,wc:num(r.waistWC)})});
+ S.measures.forEach(m=>{const v=num(m.vals&&m.vals['Taille (Nabel)']);
+  if(v!=null&&!out.some(x=>!x.alt&&Math.abs(daysBetween(x.d,m.date))<=3))out.push({d:m.date,v,wc:null,alt:true})});
+ return out.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+}
+function waistNear(d,tol=3){let best=null,bd=1e9;waistPts().filter(x=>!x.alt).forEach(x=>{const k=Math.abs(daysBetween(x.d,d));if(k<=tol&&k<bd){bd=k;best=x}});return best}
+function waistRecalc(d){
+ const r=dayRec(d),a=[num(r.waist1),num(r.waist2)].filter(x=>x!=null);
+ if(a.length&&r.waistWC!=null)r.waist=Math.round(avg(a)*100)/100;else delete r.waist;
+ if(r.waist1==null)delete r.waist1;if(r.waist2==null)delete r.waist2;
+ if(!Object.keys(r).length)delete S.days[d];
+}
+function dWaist(A,B){const x=waistNear(A,7),y=waistNear(B,7);
+ if(x&&y)return sg(y.v-x.v,1);
+ const g=(d)=>{const m=nearMk(d,'Taille (Nabel)');return m?num(m.vals['Taille (Nabel)']):null};const p=g(A),q=g(B);
+ return p!=null&&q!=null?sg(q-p,1):'–'}
+function waistMsg(d){
+ const r=S.days[d]||{},wc=num(r.waistWC),a=[num(r.waist1),num(r.waist2)];
+ const both=a[0]!=null&&a[1]!=null,diff=both?Math.abs(a[0]-a[1]):null;
+ if((a[0]!=null||a[1]!=null)&&wc==null)return '<p class="hint warn">Bitte noch den Toilettengang angeben. Erst dann zählt die Messung.</p>';
+ if(r.waist!=null)return `<p class="hint">Gespeichert: <b>${fmt(num(r.waist),1)} cm</b>${both?', Mittelwert aus beiden Messungen':', aus einer Messung'}.${diff!=null&&diff>1?` <span class="warn">Die Messungen liegen ${fmt(diff,1)} cm auseinander, miss besser ein drittes Mal.</span>`:''}</p>`;
+ return '';
+}
+function waistCard(){
+ const d=ui.wdate||todayStr(),r=S.days[d]||{},wc=num(r.waistWC);
+ const P=waistPts(),f=ui.wf||'alle',c=cutoff();
+ const Pc=P.filter(x=>x.d>=c&&(f==='alle'||(f==='ja'?x.wc===1:x.wc===0)));
+ const msg=`<div id="wamsg">${waistMsg(d)}</div>`;
+ return `<section class="sec" style="margin-top:6px"><h3>Taille, jeden Samstag</h3><div class="card">
+  <label class="lbl">Datum<input class="txt" type="date" data-wa="date" value="${d}"></label>
+  <div class="grid2 mt8"><label class="fld"><span>Messung 1</span><div class="in"><input data-wa="waist1" inputmode="decimal" autocomplete="off" value="${esc(dv(r.waist1))}"><i>cm</i></div></label>
+   <label class="fld"><span>Messung 2</span><div class="in"><input data-wa="waist2" inputmode="decimal" autocomplete="off" value="${esc(dv(r.waist2))}"><i>cm</i></div></label></div>
+  <div class="srow" style="border-top:0;margin-top:4px"><span>Toilettengang vorher</span><div class="chips">
+   <button class="chip ${wc===1?'on':''}" data-pm="wawc" data-v="1">Ja</button><button class="chip ${wc===0?'on':''}" data-pm="wawc" data-v="0">Nein</button></div></div>
+  <p class="hint" style="margin-top:2px">Morgens nüchtern, stehend, entspannt nach normalem Ausatmen, Maßband waagerecht auf Nabelhöhe, nicht ziehen.</p>${msg}</div>
+  <div class="mt8">${ranges()}</div>
+  <div class="seg sm">${[['alle','Alle'],['ja','Nur mit Toilettengang'],['nein','Nur ohne']].map(([v,l])=>`<button class="${f===v?'on':''}" data-a="seg" data-k="wf" data-v="${v}">${l}</button>`).join('')}</div>
+  <div class="card">${chartSVG([
+    {pts:Pc.map(x=>[x.d,x.v]),color:C.chalk,w:1.6},
+    {pts:Pc.filter(x=>x.wc===1).map(x=>[x.d,x.v]),color:C.chalk,dots:true,line:false,r:4,op:1},
+    {pts:Pc.filter(x=>x.wc===0).map(x=>[x.d,x.v]),color:C.chalk,dots:true,line:false,r:4,hollow:true},
+    {pts:Pc.filter(x=>x.alt).map(x=>[x.d,x.v]),color:C.mut,dots:true,line:false,r:2.8,op:.9}],
+   {label:'Taille pro Woche',dec:1,r:{pts:rolling(series('w')),color:C.blue,dec:1,unit:'kg'},
+    empty:f==='alle'?'Für den Verlauf braucht es mindestens zwei Wochen mit Taille.':'Mit diesem Filter gibt es noch keine zwei Messungen.'})}
+  <div class="legend"><span>${dot(C.chalk)}mit Toilettengang</span><span><i class="dot hollow"></i>ohne</span>${P.some(x=>x.alt)?`<span>${dot(C.mut)}ältere Messungen</span>`:''}<span><i class="lnk" style="background:${C.blue}"></i>Gewicht, 7-Tage-Schnitt, rechte Achse</span></div></div></section>`;
+}
+
+/* ---------- Samstag: was ist fällig ---------- */
+function satDue(d){
+ const t=todayStr();if(d!==t)return '';
+ const sat=pd(t).getDay()===6,o=[],r=S.days[t]||{};
+ if(sat&&num(r.waist)==null)o.push('Taille');
+ if(t>=photoDue()&&!(S.photos||[]).some(x=>x.date===t&&/^Körper/.test(x.pose)))o.push('Fotos');
+ if(t>=fullDue())o.push('volles Maßband');
+ if(!o.length&&!sat)return '';
+ const txt=o.length?(o.length>1?o.slice(0,-1).join(', ')+' und '+last(o):o[0])+' fällig':'alles erledigt';
+ return `<button class="note-line sat" data-pm="goci">${sat?'Samstag-Check-in':'Nachholen'}: ${txt}</button>`;
+}
+
+/* ---------- Check-in ---------- */
+function ciEnd(){if(ui.ciEnd)return ui.ciEnd;const t=todayStr();return addDays(t,-((pd(t).getDay()+1)%7))}
+function pCheckin(){
+ const e=ciEnd(),a=addDays(e,-6),D=daysIn(a,e),P=daysIn(addDays(a,-7),addDays(e,-7)),t=todayStr();
+ const A=(f,X)=>{const v=X.map(x=>dayVal(x,f)).filter(x=>x!=null);return v.length?avg(v):null};
+ const N=(f,X)=>X.filter(x=>dayVal(x,f)!=null).length;
+ const sgr=(x,k)=>{const r=Number(x.toFixed(k));return sg(r===0?0:r,k)};
+ const dl=(c,p,k,u)=>c!=null&&p!=null?`${sgr(c-p,k)}${u?' '+u:''} zur Vorwoche`:'Vorwoche fehlt';
+ const cov=f=>`${N(f,D)} von 7 Tagen`;
+ const tile=(lab,val,sub,cls='')=>`<div class="ci ${cls}"><small>${lab}</small><b>${val}</b><em>${sub}</em></div>`;
+ const w=A('w',D),wp=A('w',P),k=A('kcal',D),kp=A('kcal',P);
+ const pr=A('p',D),cb=A('c',D),ft=A('f',D),hr=A('hr1',D),hp=A('hr1',P),tt=A('t1',D),tp=A('t1',P),sl=A('sleep',D),sp=A('sleep',P);
+ const bs=A('bps1',D),bd=A('bpd1',D),bsp=A('bps1',P),bdp=A('bpd1',P);
+ const WP=waistPts().filter(x=>!x.alt),wk=last(WP.filter(x=>x.d>=a&&x.d<=e)),wv=last(WP.filter(x=>x.d<a&&x.d>=addDays(a,-7)));
+ const ak=A('ankle',D),am=D.filter(x=>num((S.days[x]||{}).ankleAM)===1).length,s3=D.filter(x=>ankVal(x)===3).length,aw=D.some(x=>ankWarn(x).length);
+ const mv=medPlanFor(e),mp=planUg(mv),mu=D.map(x=>num((S.days[x]||{}).medug)).filter(x=>x!=null);
+ const ses=S.sessions.filter(s=>s.date>=a&&s.date<=e);
+ const r0=x=>x==null?'–':Math.round(x);
+ let h=`<div class="cihead"><button class="ib" data-pm="cinav" data-v="-1" aria-label="Vorwoche">‹</button>
+  <div><b>Check-in KW ${isoWeek(e)}</b><span>${fD(a)} bis ${fD(e)}${e>t?', läuft noch':''}</span></div>
+  <button class="ib" data-pm="cinav" data-v="1" aria-label="Nächste Woche" ${e>=ciEndDefault()?'disabled':''}>›</button></div>`;
+ /* fällig */
+ const phW=(S.photos||[]).filter(x=>x.date>=a&&x.date<=e&&/^Körper/.test(x.pose)),pd2=photoDue();
+ const mW=S.measures.filter(m=>m.date>=a&&m.date<=e&&!isAnkOnly(m)),fd=fullDue();
+ const row=(ok,txt,btn)=>`<div class="srow"><span>${dot(ok===1?C.grn:ok===0?C.yel:C.mut)}${txt}</span>${btn||''}</div>`;
+ h+=`<div class="card list cidue">`
+  +row(wk?1:0,wk?`Taille ${fmt(wk.v,1)} cm am ${fDs(wk.d)}`:'Taille diese Woche fehlt',wk?'':'<button class="link" data-pm="gok">Eintragen</button>')
+  +(phW.length?row(1,`Fotos am ${fDs(last(phW).date)}`):pd2<=e?row(0,'Fotos fällig, alle '+(num(S.settings.photoEvery)||14)+' Tage','<button class="link" data-pm="ciph">Aufnehmen</button>'):row(2,`Fotos wieder am ${fD(pd2)}`))
+  +(mW.length?row(1,`Volles Maßband am ${fDs(last(mW).date)}`):fd<=e?row(0,'Volles Maßband fällig, alle '+(num(S.settings.measureEvery)||28)+' Tage','<button class="link" data-pm="gok">Messen</button>'):row(2,`Volles Maßband wieder am ${fD(fd)}`))
+  +`</div>`;
+ /* Kacheln */
+ h+=`<div class="cigrid mt8">`
+  +tile('Gewicht Ø',w!=null?fmt(w,1)+' kg':'–',`${dl(w,wp,2,'kg')}${w!=null&&wp?`, ${sgr((w-wp)/wp*100,2)} %`:''}<br>${cov('w')}`)
+  +tile('Kalorien Ø',k!=null?Math.round(k).toLocaleString('de-DE'):'–',`${dl(k,kp,0,'kcal')}<br>${cov('kcal')}`)
+  +tile('Makros Ø',`${r0(pr)} / ${r0(cb)} / ${r0(ft)}`,'Protein / Carbs / Fett in g')
+  +tile('Ruhepuls Ø',hr!=null?fmt(hr,0)+' bpm':'–',`${dl(hr,hp,0,'bpm')}<br>${cov('hr1')}`)
+  +tile('Temperatur Ø',tt!=null?fmt(tt,2)+' °C':'–',`${dl(tt,tp,2,'°C')}<br>${cov('t1')}`)
+  +tile('Schlaf Ø',sl!=null?fmt(sl,1)+' h':'–',`${dl(sl,sp,1,'h')}<br>${cov('sleep')}`)
+  +tile('Blutdruck Ø',bs!=null&&bd!=null?`${Math.round(bs)}/${Math.round(bd)}`:'–',
+    `${bs!=null&&bsp!=null?`${sgr(bs-bsp,0)}/${sgr(bd-bdp,0)} zur Vorwoche`:'Vorwoche fehlt'}<br>${cov('bps1')}`)
+  +tile('Taille',wk?fmt(wk.v,1)+' cm':'–',wk?`Toilettengang ${wk.wc===1?'ja':'nein'}${wv?`<br>${sgr(wk.v-wv.v,1)} cm zur Vorwoche${wv.wc!==wk.wc?', anderer Toilettenstatus':''}`:''}`:'diese Woche noch nicht gemessen',wk?'':'warn')
+  +tile('Knöchel Ø',ak!=null?fmt(ak,1):'–',`Morgens geschwollen an ${am} ${am===1?'Tag':'Tagen'}, Stufe 3 an ${s3}<br>${cov('ankle')}`,aw?'bad':'')
+  +tile('T3 pro Tag',mu.length?fmtUg(avg(mu)):'–',mv?`Plan ${fmtUg(mp)||'ohne µg'}, abgehakt an ${mu.length} von 7 Tagen`:'kein Plan in dieser Woche')
+  +tile('Training',`${ses.length} ${ses.length===1?'Einheit':'Einheiten'}`,ses.length?ses.map(s=>`${dot(dayColor(s.day))} ${esc(s.day)}`).join('<br>'):'keine Einheit eingetragen')
+  +`</div>`;
+ const lb=S.settings.lastBackup;
+ h+=`<button class="primary" data-a="backup">Backup exportieren</button>
+  <p class="hint">${lb?`Letztes Backup am ${fD(lb)}.`:'Noch kein Backup.'} ${S.settings.bkPhotos?'Fotos werden mitgesichert.':'Ohne Fotos. Das lässt sich in den Einstellungen ändern.'}</p>`;
+ return h;
+}
+function ciEndDefault(){const t=todayStr();return addDays(t,-((pd(t).getDay()+1)%7))}
+
+/* ---------- Eingaben ---------- */
+document.addEventListener('click',e=>{
+ if(!S)return;const t=e.target.closest('[data-pm]');if(!t)return;
+ const a=t.dataset.pm,v=t.dataset.v;
+ if(a==='wawc'){const d=ui.wdate||todayStr(),r=dayRec(d),x=+v;if(num(r.waistWC)===x)delete r.waistWC;else r.waistWC=x;waistRecalc(d);save();return render()}
+ if(a==='goci'){ui.prog='checkin';ui.ciEnd=null;return go('progress')}
+ if(a==='cinav'){const n=addDays(ciEnd(),7*(+v));ui.ciEnd=n>=ciEndDefault()?null:n;return render()}
+ if(a==='gok'){ui.health='koerper';ui.wdate=null;return go('health')}
+ if(a==='ciph'){ui.ppose='Körper vorne';ui.pdate=todayStr();return phSheet()}
+});
+document.addEventListener('input',e=>{
+ if(!S)return;const t=e.target,ds=t.dataset;if(!ds||!ds.wa||ds.wa==='date')return;
+ const d=ui.wdate||todayStr(),r=dayRec(d),v=num(t.value);
+ if(v==null)delete r[ds.wa];else r[ds.wa]=v;
+ waistRecalc(d);save();
+ const el=document.getElementById('wamsg');if(el)el.innerHTML=waistMsg(d);
+});
+document.addEventListener('change',e=>{
+ if(!S)return;const t=e.target,ds=t.dataset;if(!ds||ds.wa!=='date')return;
+ ui.wdate=t.value||todayStr();render();
 });
 
 (async()=>{await DB.open();await loadHist();
@@ -2597,6 +2776,7 @@ document.addEventListener('change',e=>{
  await seedLocal(st);
  try{let ch=markerSync();if(refFill())ch=1;if(ch)DB.set('state',S)}catch(e){}
  try{if(ankMigrate())DB.set('state',S)}catch(e){}
+ try{if(mrMigrate())DB.set('state',S)}catch(e){}
  syncLater(st);
  phHydrate();
  planLoad();
